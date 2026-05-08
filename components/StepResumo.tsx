@@ -17,6 +17,7 @@ type Props = {
   clinicaSelecionada: string;
   procedimentoClinico: string | null;
   dentistaSelecionado: Dentista | null;
+  dataSelecionada: string;
   horarioSelecionado: string;
   ehOrtodontia: boolean;
 };
@@ -27,6 +28,7 @@ export default function StepResumo({
   clinicaSelecionada,
   procedimentoClinico,
   dentistaSelecionado,
+  dataSelecionada,
   horarioSelecionado,
   ehOrtodontia,
 }: Props) {
@@ -39,8 +41,8 @@ export default function StepResumo({
       {ehOrtodontia && (
         <div className="mt-6 bg-purple-50 border border-purple-200 rounded-xl p-4 shadow-sm">
           <p className="text-sm text-purple-700">
-            Para ortodontia, os horários serão exibidos com base no
-            dentista que já acompanha seu tratamento.
+            Para ortodontia, os horários serão exibidos com base no dentista que
+            já acompanha seu tratamento.
           </p>
         </div>
       )}
@@ -51,8 +53,7 @@ export default function StepResumo({
         </p>
 
         <p>
-          <strong>Carteirinha:</strong>{" "}
-          {carteirinhaSelecionada?.descricao} -{" "}
+          <strong>Carteirinha:</strong> {carteirinhaSelecionada?.descricao} -{" "}
           {carteirinhaSelecionada?.numero}
         </p>
 
@@ -62,25 +63,22 @@ export default function StepResumo({
 
         {procedimentoClinico && (
           <p>
-            <strong>Procedimento:</strong>{" "}
-            {procedimentoClinico}
+            <strong>Procedimento:</strong> {procedimentoClinico}
           </p>
         )}
 
         <p>
-          <strong>Dentista:</strong>{" "}
-          {dentistaSelecionado?.nome}
+          <strong>Dentista:</strong> {dentistaSelecionado?.nome}
         </p>
 
         <p>
-          <strong>Horário:</strong>{" "}
-          {horarioSelecionado}
+          <strong>Data:</strong> {dataSelecionada}
+        </p>
+
+        <p>
+          <strong>Horário:</strong> {horarioSelecionado}
         </p>
       </div>
-
-      <button className="w-full mt-6 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 transition text-white font-semibold py-3 rounded-xl shadow-lg">
-        Confirmar agendamento
-      </button>
     </>
   );
 }
