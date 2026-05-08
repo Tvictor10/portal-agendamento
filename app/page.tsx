@@ -6,6 +6,7 @@ import StepCarteirinha from "../components/StepCarteirinha";
 import StepUnidade from "../components/StepUnidade";
 import StepProcedimento from "../components/StepProcedimento";
 import StepDentista from "../components/StepDentista";
+import StepResumo from "../components/StepResumo";
 
 type Etapa =
   | "cpf"
@@ -317,51 +318,24 @@ export default function Home() {
         )}
 
         {etapa === "resumo" && beneficiario && (
-          <>
-            <h1 className="text-2xl font-bold text-slate-800">
-              Resumo do agendamento
-            </h1>
-
-            {carteirinhaSelecionada?.tipo === "ortodontia" && (
-              <div className="mt-6 bg-purple-50 border border-purple-200 rounded-xl p-4 shadow-sm">
-                <p className="text-sm text-purple-700">
-                  Para ortodontia, os horários serão exibidos com base no
-                  dentista que já acompanha seu tratamento.
-                </p>
-              </div>
-            )}
-
-            <div className="mt-6 bg-slate-100 rounded-xl p-4 border border-slate-200 space-y-2 text-sm text-slate-600">
-              <p>
-                <strong>Paciente:</strong> {beneficiario.nome}
-              </p>
-
-              <p>
-                <strong>Carteirinha:</strong>{" "}
-                {carteirinhaSelecionada?.descricao} -{" "}
-                {carteirinhaSelecionada?.numero}
-              </p>
-
-              <p>
-                <strong>Unidade:</strong> {clinicaSelecionada}
-              </p>
-
-              {procedimentoClinico && (
-                <p>
-                  <strong>Procedimento:</strong> {procedimentoClinico}
-                </p>
-              )}
-
-              <p>
-                <strong>Dentista:</strong> {dentistaSelecionado?.nome}
-              </p>
-            </div>
-
-            <button className="w-full mt-6 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 transition text-white font-semibold py-3 rounded-xl shadow-lg">
-              Continuar para horários
-            </button>
-          </>
-        )}
+  <StepResumo
+    beneficiario={beneficiario}
+    carteirinhaSelecionada={
+      carteirinhaSelecionada
+    }
+    clinicaSelecionada={clinicaSelecionada}
+    procedimentoClinico={
+      procedimentoClinico
+    }
+    dentistaSelecionado={
+      dentistaSelecionado
+    }
+    ehOrtodontia={
+      carteirinhaSelecionada?.tipo ===
+      "ortodontia"
+    }
+  />
+)}
       </div>
     </main>
   );
