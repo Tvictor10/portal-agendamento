@@ -3,6 +3,10 @@
 import { useState } from "react";
 import StepCpf from "../components/StepCpf";
 import StepCarteirinha from "../components/StepCarteirinha";
+import StepUnidade from "../components/StepUnidade";
+import StepProcedimento from "../components/StepProcedimento";
+import StepDentista from "../components/StepDentista";
+
 type Etapa =
   | "cpf"
   | "carteirinha"
@@ -277,117 +281,39 @@ export default function Home() {
           />
         )}
 
-       {etapa === "carteirinha" && beneficiario && (
-  <StepCarteirinha
-    beneficiario={beneficiario}
-    onSelecionarCarteirinha={selecionarCarteirinha}
-  />
-)}
+        {etapa === "carteirinha" && beneficiario && (
+          <StepCarteirinha
+            beneficiario={beneficiario}
+            onSelecionarCarteirinha={selecionarCarteirinha}
+          />
+        )}
 
         {etapa === "unidade" && (
-          <>
-            <h1 className="text-2xl font-bold text-slate-800">
-              Escolha a unidade
-            </h1>
-
-            <p className="text-slate-500 mt-2">
-              Carteirinha: {carteirinhaSelecionada?.descricao}
-            </p>
-
-            <div className="mt-8 space-y-3">
-              {clinicas.map((clinica) => (
-                <button
-                  key={clinica}
-                  onClick={() => selecionarUnidade(clinica)}
-                  className="w-full rounded-xl p-4 text-left border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 hover:shadow-md transition"
-                >
-                  {clinica}
-                </button>
-              ))}
-            </div>
-          </>
+          <StepUnidade
+            carteirinhaDescricao={carteirinhaSelecionada?.descricao}
+            clinicas={clinicas}
+            onSelecionarUnidade={selecionarUnidade}
+          />
         )}
 
         {etapa === "procedimento" && (
-          <>
-            <h1 className="text-2xl font-bold text-slate-800">
-              Escolha o procedimento
-            </h1>
-
-            <p className="text-slate-500 mt-2">
-              Unidade: {clinicaSelecionada}
-            </p>
-
-            <div className="mt-8 space-y-3">
-              {procedimentosClinicos.map((procedimento) => (
-                <button
-                  key={procedimento}
-                  onClick={() => selecionarProcedimento(procedimento)}
-                  className={`w-full rounded-xl p-4 text-left border transition ${
-                    procedimentoClinico === procedimento
-                      ? "border-orange-500 bg-orange-100 shadow-md"
-                      : "border-slate-200 hover:border-orange-400 hover:bg-orange-50 hover:shadow-md"
-                  }`}
-                >
-                  {procedimento}
-                </button>
-              ))}
-            </div>
-
-            {procedimentoClinico === "AUTORIZAÇÃO | RAIO X" && (
-              <div className="mt-8 bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm">
-                <p className="text-sm text-green-700">
-                  Este tipo de atendimento é agendado apenas por nossa equipe.
-                </p>
-
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full text-center mt-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 rounded-xl shadow-lg"
-                >
-                  Falar no WhatsApp
-                </a>
-              </div>
-            )}
-          </>
+          <StepProcedimento
+            clinicaSelecionada={clinicaSelecionada}
+            procedimentos={procedimentosClinicos}
+            procedimentoSelecionado={procedimentoClinico}
+            onSelecionarProcedimento={selecionarProcedimento}
+            whatsappUrl={whatsappUrl}
+          />
         )}
 
         {etapa === "dentista" && (
-          <>
-            <h1 className="text-2xl font-bold text-slate-800">
-              Escolha o dentista
-            </h1>
-
-            <p className="text-slate-500 mt-2">
-              Procedimento: {procedimentoClinico}
-            </p>
-
-            {mostrarObservacaoEncaminhamento && (
-              <div className="mt-6 bg-amber-50 border border-amber-200 rounded-xl p-4 shadow-sm">
-                <p className="text-sm text-amber-800">
-                  {mensagemEncaminhamento}
-                </p>
-              </div>
-            )}
-
-            <div className="mt-8 space-y-3">
-              {listaDentistas.map((dentista) => (
-                <button
-                  key={dentista.id}
-                  onClick={() => selecionarDentista(dentista)}
-                  className="w-full rounded-xl p-4 text-left border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50 hover:shadow-md transition"
-                >
-                  <p className="font-semibold text-slate-800">
-                    {dentista.nome}
-                  </p>
-                  <p className="text-sm text-slate-500">
-                    {dentista.especialidade}
-                  </p>
-                </button>
-              ))}
-            </div>
-          </>
+          <StepDentista
+            procedimentoClinico={procedimentoClinico}
+            mostrarObservacaoEncaminhamento={mostrarObservacaoEncaminhamento}
+            mensagemEncaminhamento={mensagemEncaminhamento}
+            dentistas={listaDentistas}
+            onSelecionarDentista={selecionarDentista}
+          />
         )}
 
         {etapa === "resumo" && beneficiario && (
