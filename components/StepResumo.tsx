@@ -17,6 +17,7 @@ type Props = {
   clinicaSelecionada: string;
   procedimentoClinico: string | null;
   dentistaSelecionado: Dentista | null;
+  horarioSelecionado: string;
   ehOrtodontia: boolean;
 };
 
@@ -26,6 +27,7 @@ export default function StepResumo({
   clinicaSelecionada,
   procedimentoClinico,
   dentistaSelecionado,
+  horarioSelecionado,
   ehOrtodontia,
 }: Props) {
   return (
@@ -69,10 +71,15 @@ export default function StepResumo({
           <strong>Dentista:</strong>{" "}
           {dentistaSelecionado?.nome}
         </p>
+
+        <p>
+          <strong>Horário:</strong>{" "}
+          {horarioSelecionado}
+        </p>
       </div>
 
       <button className="w-full mt-6 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 transition text-white font-semibold py-3 rounded-xl shadow-lg">
-        Continuar para horários
+        Confirmar agendamento
       </button>
     </>
   );

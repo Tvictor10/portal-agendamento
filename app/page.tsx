@@ -6,7 +6,9 @@ import StepCarteirinha from "../components/StepCarteirinha";
 import StepUnidade from "../components/StepUnidade";
 import StepProcedimento from "../components/StepProcedimento";
 import StepDentista from "../components/StepDentista";
+import StepHorarios from "../components/StepHorarios";
 import StepResumo from "../components/StepResumo";
+import StepConfirmacao from "../components/StepConfirmacao";
 
 type Etapa =
   | "cpf"
@@ -14,7 +16,9 @@ type Etapa =
   | "unidade"
   | "procedimento"
   | "dentista"
-  | "resumo";
+  | "horarios"
+  | "resumo"
+  | "confirmacao";
 
 type Carteirinha = {
   id: number;
@@ -79,6 +83,17 @@ const mensagemEncaminhamento =
 const whatsappUrl =
   "https://wa.me/5584999999999?text=Olá,%20gostaria%20de%20agendar%20um%20atendimento.";
 
+const horariosMock = [
+  "08:00",
+  "08:30",
+  "09:00",
+  "09:30",
+  "10:00",
+  "14:00",
+  "14:30",
+  "15:00",
+];
+
 export default function Home() {
   const [etapa, setEtapa] = useState<Etapa>("cpf");
 
@@ -87,13 +102,25 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
 
   const [beneficiario, setBeneficiario] = useState<Beneficiario | null>(null);
+
   const [carteirinhaSelecionada, setCarteirinhaSelecionada] =
     useState<Carteirinha | null>(null);
-  const [clinicaSelecionada, setClinicaSelecionada] = useState("");
+
+  const [clinicaSelecionada, setClinicaSelecionada] =
+    useState("");
+
   const [procedimentoClinico, setProcedimentoClinico] =
     useState<ProcedimentoClinico | null>(null);
+
   const [dentistaSelecionado, setDentistaSelecionado] =
     useState<Dentista | null>(null);
+
+  const [horarioSelecionado, setHorarioSelecionado] =
+    useState("");
+
+  const [protocolo] = useState(
+    `AG-${Math.floor(Math.random() * 100000)}`
+  );
 
   function formatCPF(value: string) {
     value = value.replace(/\D/g, "");
@@ -107,49 +134,52 @@ export default function Home() {
     return cpf.replace(/\D/g, "").length === 11;
   }
 
-  function handleCPFChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleCPFChange(
+    e: React.ChangeEvent<HTMLInputElement>
+  ) {
     setCpf(formatCPF(e.target.value));
+
     if (erro) setErro("");
   }
 
   async function consultarBeneficiario() {
-    return new Promise<Beneficiario>((resolve, reject) => {
-      setTimeout(() => {
-        const cpfLimpo = cpf.replace(/\D/g, "");
+    return new Promise<Beneficiario>(
+      (resolve, reject) => {
+        setTimeout(() => {
+          const cpfLimpo = cpf.replace(/\D/g, "");
 
-        if (cpfLimpo === "11111111111") {
-          reject("Beneficiário não encontrado");
-          return;
-        }
+          if (cpfLimpo === "11111111111") {
+            reject("Beneficiário não encontrado");
+            return;
+          }
 
-        if (cpfLimpo === "99999999999") {
-          reject("Não foi possível continuar. Entre em contato com nossa equipe.");
-          return;
-        }
-
-        resolve({
-          nome: "João Silva",
-          carteirinhas: [
-            {
-              id: 1,
-              numero: "CLI-123456",
-              tipo: "clinico",
-              descricao: "Carteirinha Clínica",
-            },
-            {
-              id: 2,
-              numero: "ORT-987654",
-              tipo: "ortodontia",
-              descricao: "Carteirinha Ortodôntica",
-            },
-          ],
-        });
-      }, 1200);
-    });
+          resolve({
+            nome: "João Silva",
+            carteirinhas: [
+              {
+                id: 1,
+                numero: "CLI-123456",
+                tipo: "clinico",
+                descricao: "Carteirinha Clínica",
+              },
+              {
+                id: 2,
+                numero: "ORT-987654",
+                tipo: "ortodontia",
+                descricao: "Carteirinha Ortodôntica",
+              },
+            ],
+          });
+        }, 1000);
+      }
+    );
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(
+    e: React.FormEvent
+  ) {
     e.preventDefault();
+
     setErro("");
 
     if (!validarCPF(cpf)) {
@@ -159,8 +189,12 @@ export default function Home() {
 
     try {
       setLoading(true);
-      const dados = await consultarBeneficiario();
+
+      const dados =
+        await consultarBeneficiario();
+
       setBeneficiario(dados);
+
       setEtapa("carteirinha");
     } catch (err: any) {
       setErro(err);
@@ -169,49 +203,87 @@ export default function Home() {
     }
   }
 
-  function selecionarCarteirinha(carteirinha: Carteirinha) {
+  function selecionarCarteirinha(
+    carteirinha: Carteirinha
+  ) {
     setCarteirinhaSelecionada(carteirinha);
+
     setClinicaSelecionada("");
     setProcedimentoClinico(null);
     setDentistaSelecionado(null);
+    setHorarioSelecionado("");
 
     if (carteirinha.tipo === "ortodontia") {
-      setDentistaSelecionado(dentistaOrtodonticoDoPaciente);
+      setDentistaSelecionado(
+        dentistaOrtodonticoDoPaciente
+      );
     }
 
     setEtapa("unidade");
   }
 
-  function selecionarUnidade(clinica: string) {
+  function selecionarUnidade(
+    clinica: string
+  ) {
     setClinicaSelecionada(clinica);
 
-    if (carteirinhaSelecionada?.tipo === "clinico") {
-      setProcedimentoClinico(null);
-      setDentistaSelecionado(null);
+    if (
+      carteirinhaSelecionada?.tipo ===
+      "clinico"
+    ) {
       setEtapa("procedimento");
       return;
     }
 
-    if (carteirinhaSelecionada?.tipo === "ortodontia") {
-      setDentistaSelecionado(dentistaOrtodonticoDoPaciente);
-      setEtapa("resumo");
-    }
+    setEtapa("horarios");
   }
 
-  function selecionarProcedimento(procedimento: ProcedimentoClinico) {
+  function selecionarProcedimento(
+    procedimento: ProcedimentoClinico
+  ) {
     setProcedimentoClinico(procedimento);
-    setDentistaSelecionado(null);
 
-    if (procedimento === "AUTORIZAÇÃO | RAIO X") {
+    if (
+      procedimento ===
+      "AUTORIZAÇÃO | RAIO X"
+    ) {
       return;
     }
 
     setEtapa("dentista");
   }
 
-  function selecionarDentista(dentista: Dentista) {
+  function selecionarDentista(
+    dentista: Dentista
+  ) {
     setDentistaSelecionado(dentista);
+
+    setEtapa("horarios");
+  }
+
+  function selecionarHorario(
+    horario: string
+  ) {
+    setHorarioSelecionado(horario);
+
     setEtapa("resumo");
+  }
+
+  function confirmarAgendamento() {
+    setEtapa("confirmacao");
+  }
+
+  function novoAgendamento() {
+    setCpf("");
+    setErro("");
+    setBeneficiario(null);
+    setCarteirinhaSelecionada(null);
+    setClinicaSelecionada("");
+    setProcedimentoClinico(null);
+    setDentistaSelecionado(null);
+    setHorarioSelecionado("");
+
+    setEtapa("cpf");
   }
 
   function voltar() {
@@ -235,12 +307,21 @@ export default function Home() {
       return;
     }
 
-    if (etapa === "resumo") {
-      if (carteirinhaSelecionada?.tipo === "ortodontia") {
+    if (etapa === "horarios") {
+      if (
+        carteirinhaSelecionada?.tipo ===
+        "ortodontia"
+      ) {
         setEtapa("unidade");
       } else {
         setEtapa("dentista");
       }
+
+      return;
+    }
+
+    if (etapa === "resumo") {
+      setEtapa("horarios");
     }
   }
 
@@ -253,24 +334,28 @@ export default function Home() {
 
   const mostrarObservacaoEncaminhamento =
     procedimentoClinico !== null &&
-    procedimentosComEncaminhamento.includes(procedimentoClinico);
+    procedimentosComEncaminhamento.includes(
+      procedimentoClinico
+    );
 
   const listaDentistas =
-    procedimentoClinico === "ODONTOPEDIATRIA"
+    procedimentoClinico ===
+    "ODONTOPEDIATRIA"
       ? dentistasOdontopediatria
       : dentistasClinicos;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-blue-100 flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-md rounded-3xl shadow-xl p-8 border border-slate-100">
-        {etapa !== "cpf" && (
-          <button
-            onClick={voltar}
-            className="mb-6 text-sm font-semibold text-slate-500 hover:text-slate-800"
-          >
-            ← Voltar
-          </button>
-        )}
+        {etapa !== "cpf" &&
+          etapa !== "confirmacao" && (
+            <button
+              onClick={voltar}
+              className="mb-6 text-sm font-semibold text-slate-500 hover:text-slate-800"
+            >
+              ← Voltar
+            </button>
+          )}
 
         {etapa === "cpf" && (
           <StepCpf
@@ -282,60 +367,132 @@ export default function Home() {
           />
         )}
 
-        {etapa === "carteirinha" && beneficiario && (
-          <StepCarteirinha
-            beneficiario={beneficiario}
-            onSelecionarCarteirinha={selecionarCarteirinha}
-          />
-        )}
+        {etapa === "carteirinha" &&
+          beneficiario && (
+            <StepCarteirinha
+              beneficiario={beneficiario}
+              onSelecionarCarteirinha={
+                selecionarCarteirinha
+              }
+            />
+          )}
 
         {etapa === "unidade" && (
           <StepUnidade
-            carteirinhaDescricao={carteirinhaSelecionada?.descricao}
+            carteirinhaDescricao={
+              carteirinhaSelecionada?.descricao
+            }
             clinicas={clinicas}
-            onSelecionarUnidade={selecionarUnidade}
+            onSelecionarUnidade={
+              selecionarUnidade
+            }
           />
         )}
 
         {etapa === "procedimento" && (
           <StepProcedimento
-            clinicaSelecionada={clinicaSelecionada}
-            procedimentos={procedimentosClinicos}
-            procedimentoSelecionado={procedimentoClinico}
-            onSelecionarProcedimento={selecionarProcedimento}
+            clinicaSelecionada={
+              clinicaSelecionada
+            }
+            procedimentos={
+              procedimentosClinicos
+            }
+            procedimentoSelecionado={
+              procedimentoClinico
+            }
+            onSelecionarProcedimento={
+              selecionarProcedimento
+            }
             whatsappUrl={whatsappUrl}
           />
         )}
 
         {etapa === "dentista" && (
           <StepDentista
-            procedimentoClinico={procedimentoClinico}
-            mostrarObservacaoEncaminhamento={mostrarObservacaoEncaminhamento}
-            mensagemEncaminhamento={mensagemEncaminhamento}
+            procedimentoClinico={
+              procedimentoClinico
+            }
+            mostrarObservacaoEncaminhamento={
+              mostrarObservacaoEncaminhamento
+            }
+            mensagemEncaminhamento={
+              mensagemEncaminhamento
+            }
             dentistas={listaDentistas}
-            onSelecionarDentista={selecionarDentista}
+            onSelecionarDentista={
+              selecionarDentista
+            }
           />
         )}
 
-        {etapa === "resumo" && beneficiario && (
-  <StepResumo
-    beneficiario={beneficiario}
-    carteirinhaSelecionada={
-      carteirinhaSelecionada
-    }
-    clinicaSelecionada={clinicaSelecionada}
-    procedimentoClinico={
-      procedimentoClinico
-    }
-    dentistaSelecionado={
-      dentistaSelecionado
-    }
-    ehOrtodontia={
-      carteirinhaSelecionada?.tipo ===
-      "ortodontia"
-    }
-  />
-)}
+        {etapa === "horarios" && (
+          <StepHorarios
+            horarios={horariosMock}
+            horarioSelecionado={
+              horarioSelecionado
+            }
+            onSelecionarHorario={
+              selecionarHorario
+            }
+          />
+        )}
+
+        {etapa === "resumo" &&
+          beneficiario && (
+            <>
+              <StepResumo
+                beneficiario={beneficiario}
+                carteirinhaSelecionada={
+                  carteirinhaSelecionada
+                }
+                clinicaSelecionada={
+                  clinicaSelecionada
+                }
+                procedimentoClinico={
+                  procedimentoClinico
+                }
+                dentistaSelecionado={
+                  dentistaSelecionado
+                }
+                horarioSelecionado={
+                  horarioSelecionado
+                }
+                ehOrtodontia={
+                  carteirinhaSelecionada?.tipo ===
+                  "ortodontia"
+                }
+              />
+
+              <button
+                onClick={
+                  confirmarAgendamento
+                }
+                className="w-full mt-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 transition text-white font-semibold py-3 rounded-xl shadow-lg"
+              >
+                Finalizar agendamento
+              </button>
+            </>
+          )}
+
+        {etapa === "confirmacao" &&
+          beneficiario &&
+          dentistaSelecionado && (
+            <StepConfirmacao
+              paciente={beneficiario.nome}
+              clinica={clinicaSelecionada}
+              dentista={
+                dentistaSelecionado.nome
+              }
+              horario={horarioSelecionado}
+              procedimento={
+                procedimentoClinico
+              }
+              protocolo={protocolo}
+              onNovoAgendamento={
+                novoAgendamento
+              }
+            />
+          )}
       </div>
     </main>
   );
