@@ -23,25 +23,38 @@ function converterDataBR(data: string) {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const cpf = searchParams.get("cpf");
 
-  if (!cpf) {
+  const carteirinha = searchParams.get("carteirinha");
+
+  if (!carteirinha) {
     return Response.json(
-      { success: false, message: "CPF não informado" },
+      {
+        success: false,
+        message: "Carteirinha não informada",
+      },
       { status: 400 }
     );
   }
 
   try {
     const token = await obterToken();
+
     const idCooperativa = 1055;
 
+    const hoje = new Date();
+
+    const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+    const ano = hoje.getFullYear();
+
+    const dataInicio = `${mes}/01/${ano}`;
+    const dataFim = `${mes}/31/${ano}`;
+
     const url =
-      `${process.env.API_BASE_URL}/agenda-beneficiario-cpf` +
+      `${process.env.API_BASE_URL}/agenda-beneficiario` +
       `?idCooperativa=${idCooperativa}` +
-      `&cpf=${cpf}` +
-      `&dataInicio=01/01/2026` +
-      `&dataFim=12/31/2026`;
+      `&carteirinha=${carteirinha}` +
+      `&dataInicio=${dataInicio}` +
+      `&dataFim=${dataFim}`;
 
     const response = await fetch(url, {
       method: "GET",
@@ -53,39 +66,26 @@ export async function GET(request: Request) {
 
     const json = await response.json();
 
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
+    const hojeSemHora = new Date();
+    hojeSemHora.setHours(0, 0, 0, 0);
 
     const agendamentos = json.data || [];
 
     const agendamentosFuturos = agendamentos.filter((item: any) => {
-      if (!item.dataAgendamento) return false;
+      if (!item.dataAgenda) return false;
 
-      const dataAgendamento = converterDataBR(item.dataAgendamento);
-      dataAgendamento.setHours(0, 0, 0, 0);
+      const dataAgenda = converterDataBR(item.dataAgenda);
 
-      return dataAgendamento > hoje;
+      dataAgenda.setHours(0, 0, 0, 0);
+
+      return dataAgenda > hojeSemHora;
     });
-
-    const proximoAgendamento = agendamentosFuturos[0];
 
     return Response.json({
       success: true,
-      possuiAgendamentoFuturo: Boolean(proximoAgendamento),
-      agendamento: proximoAgendamento
-        ? {
-            local: proximoAgendamento.local,
-            prestador: proximoAgendamento.nomePrestador,
-            carteirinha: proximoAgendamento.codCarteirinha,
-            beneficiario: proximoAgendamento.nomeBeneficiario,
-            descricao: proximoAgendamento.descricao,
-            data: proximoAgendamento.dataAgendamento,
-            horario: proximoAgendamento.horario,
-            status: proximoAgendamento.statusAgendamento,
-            telefone: proximoAgendamento.telefone,
-            observacao: proximoAgendamento.observacao,
-          }
-        : null,
+      possuiAgendamentoFuturo: agendamentosFuturos.length > 0,
+      quantidade: agendamentosFuturos.length,
+      agendamentos: agendamentosFuturos,
       raw: json,
     });
   } catch (error: any) {
