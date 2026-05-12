@@ -1,17 +1,17 @@
-type DataDisponivel = {
+type GrupoDatas = {
   diaSemana: string;
   datas: string[];
 };
 
 type Props = {
-  datasDisponiveis: DataDisponivel[];
-  dataSelecionada: string;
+  datasDisponiveis?: GrupoDatas[];
+  dataSelecionada?: string;
   onSelecionarData: (data: string) => void;
 };
 
 export default function StepDatas({
-  datasDisponiveis,
-  dataSelecionada,
+  datasDisponiveis = [],
+  dataSelecionada = "",
   onSelecionarData,
 }: Props) {
   return (
@@ -21,34 +21,40 @@ export default function StepDatas({
       </h1>
 
       <p className="text-slate-500 mt-2">
-        Selecione uma data disponível para continuar
+        Selecione uma das datas disponíveis.
       </p>
 
-      <div className="mt-8 space-y-5">
-        {datasDisponiveis.map((grupo) => (
-          <div key={grupo.diaSemana}>
-            <h2 className="font-semibold text-slate-700 mb-3">
-              {grupo.diaSemana}
-            </h2>
+      {datasDisponiveis.length === 0 ? (
+        <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          Nenhuma data disponível encontrada para este prestador.
+        </div>
+      ) : (
+        <div className="mt-8 space-y-5">
+          {datasDisponiveis.map((grupo) => (
+            <div key={grupo.diaSemana}>
+              <h2 className="font-semibold text-slate-700 mb-3 capitalize">
+                {grupo.diaSemana}
+              </h2>
 
-            <div className="grid grid-cols-2 gap-3">
-              {grupo.datas.map((data) => (
-                <button
-                  key={data}
-                  onClick={() => onSelecionarData(data)}
-                  className={`rounded-xl py-3 px-4 font-semibold border transition ${
-                    dataSelecionada === data
-                      ? "border-blue-500 bg-blue-100 text-blue-800 shadow-md"
-                      : "border-slate-200 hover:border-blue-400 hover:bg-blue-50 text-slate-700"
-                  }`}
-                >
-                  {data}
-                </button>
-              ))}
+              <div className="grid grid-cols-2 gap-3">
+                {grupo.datas.map((data) => (
+                  <button
+                    key={data}
+                    onClick={() => onSelecionarData(data)}
+                    className={`rounded-xl p-3 border font-semibold transition ${
+                      dataSelecionada === data
+                        ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                        : "bg-white text-slate-700 border-slate-200 hover:border-blue-400 hover:bg-blue-50"
+                    }`}
+                  >
+                    {data}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </>
   );
 }
