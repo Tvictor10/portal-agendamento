@@ -32,7 +32,7 @@ export default function StepCarteirinha({
       <div className="mt-8 space-y-3">
         {beneficiario.carteirinhas.map((carteirinha) => (
           <button
-            key={carteirinha.id}
+            key={`${carteirinha.numero}-${carteirinha.tipo}`}
             onClick={() => onSelecionarCarteirinha(carteirinha)}
             className="w-full rounded-xl p-4 text-left border border-slate-200 hover:border-cyan-400 hover:bg-cyan-50 hover:shadow-md transition"
           >

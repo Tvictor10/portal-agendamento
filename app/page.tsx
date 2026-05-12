@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import StepCpf from "../components/StepCpf";
 import StepCarteirinha from "../components/StepCarteirinha";
 import StepUnidade from "../components/StepUnidade";
@@ -11,6 +12,13 @@ import StepHorarios from "../components/StepHorarios";
 import StepResumo from "../components/StepResumo";
 import StepConfirmacao from "../components/StepConfirmacao";
 import StepAgendamentoExistente from "../components/StepAgendamentoExistente";
+
+import {
+  PROCEDIMENTOS_CLINICOS,
+  PROCEDIMENTOS_COM_ENCAMINHAMENTO,
+  MENSAGEM_ENCAMINHAMENTO,
+  WHATSAPP_URL,
+} from "../config/regrasAgendamento";
 
 type Etapa =
   | "cpf"
@@ -54,31 +62,7 @@ type GrupoDatas = {
 };
 
 type ProcedimentoClinico =
-  | "AUTORIZAÇÃO | RAIO X"
-  | "CANAL"
-  | "PERIODONTIA"
-  | "RECONSTRUÇÃO"
-  | "CIRURGIA"
-  | "LIMPEZA | RESTAURAÇÃO"
-  | "CONSULTA INICIAL"
-  | "ODONTOPEDIATRIA";
-
-const procedimentosClinicos: ProcedimentoClinico[] = [
-  "AUTORIZAÇÃO | RAIO X",
-  "CANAL",
-  "PERIODONTIA",
-  "RECONSTRUÇÃO",
-  "CIRURGIA",
-  "LIMPEZA | RESTAURAÇÃO",
-  "CONSULTA INICIAL",
-  "ODONTOPEDIATRIA",
-];
-
-const mensagemEncaminhamento =
-  "Para este tipo de atendimento é necessário o encaminhamento do dentista, caso não tenha, escolha a opção Autorização";
-
-const whatsappUrl =
-  "https://wa.me/5584999999999?text=Olá,%20gostaria%20de%20agendar%20um%20atendimento.";
+  (typeof PROCEDIMENTOS_CLINICOS)[number];
 
 export default function Home() {
   const [etapa, setEtapa] = useState<Etapa>("cpf");
@@ -87,35 +71,42 @@ export default function Home() {
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [beneficiario, setBeneficiario] = useState<Beneficiario | null>(null);
+  const [beneficiario, setBeneficiario] =
+    useState<Beneficiario | null>(null);
+
   const [carteirinhaSelecionada, setCarteirinhaSelecionada] =
     useState<Carteirinha | null>(null);
 
   const [clinicas, setClinicas] = useState<Clinica[]>([]);
+
   const [clinicaSelecionada, setClinicaSelecionada] =
     useState<Clinica | null>(null);
 
   const [procedimentoClinico, setProcedimentoClinico] =
     useState<ProcedimentoClinico | null>(null);
 
-  const [dentistasDisponiveis, setDentistasDisponiveis] = useState<Dentista[]>(
-    []
-  );
+  const [dentistasDisponiveis, setDentistasDisponiveis] =
+    useState<Dentista[]>([]);
 
   const [dentistaSelecionado, setDentistaSelecionado] =
     useState<Dentista | null>(null);
 
-  const [datasDisponiveis, setDatasDisponiveis] = useState<GrupoDatas[]>([]);
-  const [horariosPorData, setHorariosPorData] = useState<
-    Record<string, string[]>
-  >({});
+  const [datasDisponiveis, setDatasDisponiveis] =
+    useState<GrupoDatas[]>([]);
+
+  const [horariosPorData, setHorariosPorData] =
+    useState<Record<string, string[]>>({});
 
   const [dataSelecionada, setDataSelecionada] = useState("");
-  const [horarioSelecionado, setHorarioSelecionado] = useState("");
+  const [horarioSelecionado, setHorarioSelecionado] =
+    useState("");
 
-  const [agendamentoExistente, setAgendamentoExistente] = useState<any>(null);
+  const [agendamentoExistente, setAgendamentoExistente] =
+    useState<any>(null);
 
-  const [protocolo] = useState(`AG-${Math.floor(Math.random() * 100000)}`);
+  const [protocolo] = useState(
+    `AG-${Math.floor(Math.random() * 100000)}`
+  );
 
   function formatCPF(value: string) {
     value = value.replace(/\D/g, "");
@@ -129,38 +120,50 @@ export default function Home() {
     return cpf.replace(/\D/g, "").length === 11;
   }
 
-  function handleCPFChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleCPFChange(
+    e: React.ChangeEvent<HTMLInputElement>
+  ) {
     setCpf(formatCPF(e.target.value));
-    if (erro) setErro("");
+
+    if (erro) {
+      setErro("");
+    }
   }
 
   async function consultarBeneficiario() {
     const cpfLimpo = cpf.replace(/\D/g, "");
 
-    const response = await fetch(`/api/beneficiario?cpf=${cpfLimpo}`);
+    const response = await fetch(
+      `/api/beneficiario?cpf=${cpfLimpo}`
+    );
+
     const data = await response.json();
 
     if (!data.success) {
-      throw new Error(data.message || "Erro ao consultar beneficiário");
+      throw new Error(
+        data.message || "Erro ao consultar beneficiário"
+      );
     }
 
-    if (!data.carteirinhas || data.carteirinhas.length === 0) {
-      throw new Error("Nenhuma carteirinha ativa disponível para agendamento.");
-    }
+   if (
+  !data.carteirinhas ||
+  data.carteirinhas.length === 0
+) {
+  throw new Error(
+    "CPF não encontrado, verifique os dados inseridos."
+  );
+}
 
-    return {
-      nome: data.beneficiario,
-      carteirinhas: data.carteirinhas.map((carteirinha: any, index: number) => ({
-        id: index + 1,
-        numero: carteirinha.numero,
-        tipo: carteirinha.tipo,
-        descricao: carteirinha.descricao,
-      })),
-    };
+return {
+  nome: data.beneficiario,
+  carteirinhas: data.carteirinhas,
+};
+
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
     setErro("");
 
     if (!validarCPF(cpf)) {
@@ -170,322 +173,273 @@ export default function Home() {
 
     try {
       setLoading(true);
+
       const dados = await consultarBeneficiario();
+
       setBeneficiario(dados);
+
       setEtapa("carteirinha");
     } catch (error: any) {
-      setErro(error.message || "Não foi possível consultar o beneficiário");
+      setErro(
+        error.message ||
+          "Não foi possível consultar o beneficiário"
+      );
     } finally {
       setLoading(false);
     }
   }
 
   async function carregarClinicas() {
-    const respostaClinicas = await fetch("/api/clinicas");
-    const dadosClinicas = await respostaClinicas.json();
-
-    if (dadosClinicas.success) {
-      setClinicas(dadosClinicas.clinicas);
-    }
-  }
-
-  async function carregarDatasDisponiveis(dentista: Dentista, clinica: Clinica) {
-    if (!carteirinhaSelecionada) {
-      setErro("Carteirinha não selecionada.");
-      return;
-    }
-
-    setDatasDisponiveis([]);
-    setHorariosPorData({});
-
-    const response = await fetch(
-      `/api/datas-disponiveis?idClinica=${clinica.id}&idCorpoClinico=${dentista.id}&carteirinha=${carteirinhaSelecionada.numero}&tipo=${carteirinhaSelecionada.tipo}`
-    );
+    const response = await fetch("/api/clinicas");
 
     const data = await response.json();
 
-    if (!data.success) {
-      setErro(data.message || "Não foi possível consultar datas disponíveis.");
-      return;
+    if (data.success) {
+      setClinicas(data.clinicas);
     }
-
-    setDatasDisponiveis(data.datasDisponiveis || []);
-    setHorariosPorData(data.horariosPorData || {});
   }
 
-  async function selecionarCarteirinha(carteirinha: Carteirinha) {
-    setCarteirinhaSelecionada(carteirinha);
-    setClinicaSelecionada(null);
-    setProcedimentoClinico(null);
-    setDentistaSelecionado(null);
-    setDentistasDisponiveis([]);
-    setDatasDisponiveis([]);
-    setHorariosPorData({});
-    setDataSelecionada("");
-    setHorarioSelecionado("");
-    setAgendamentoExistente(null);
-    setErro("");
+  async function carregarDatasDisponiveis(
+  dentista: Dentista,
+  clinica: Clinica,
+  carteirinhaParam?: Carteirinha
+) {
+  const carteirinhaUsada = carteirinhaParam || carteirinhaSelecionada;
 
-    try {
-      const responseAgendamentos = await fetch(
-        `/api/agendamentos?carteirinha=${carteirinha.numero}`
-      );
+  if (!carteirinhaUsada) {
+    setErro("Carteirinha não selecionada.");
+    return;
+  }
 
-      const dadosAgendamentos = await responseAgendamentos.json();
+  setDatasDisponiveis([]);
+  setHorariosPorData({});
 
-      if (
-        dadosAgendamentos.possuiAgendamentoFuturo &&
-        dadosAgendamentos.agendamentos?.length > 0
-      ) {
-        setAgendamentoExistente(dadosAgendamentos.agendamentos[0]);
-        setEtapa("agendamento-existente");
-        return;
-      }
-
-      if (carteirinha.tipo === "ortodontia") {
   const response = await fetch(
-    `/api/ultimo-ortodontista?carteirinha=${carteirinha.numero}`
+    `/api/datas-disponiveis?idClinica=${clinica.id}&idCorpoClinico=${dentista.id}&carteirinha=${carteirinhaUsada.numero}&tipo=${carteirinhaUsada.tipo}`
   );
 
   const data = await response.json();
 
-  if (!data.possuiOrtodontistaAnterior) {
-    setEtapa("inicio-ortodontico");
-    return;
-  }
-
-  const clinicaTratamento = data.clinica;
-  const ortodontistaTratamento = {
-    id: data.ortodontista.id,
-    nome: data.ortodontista.nome,
-    especialidade: "Ortodontia",
-  };
-
-  setClinicaSelecionada(clinicaTratamento);
-  setDentistaSelecionado(ortodontistaTratamento);
-
-  await carregarDatasDisponiveis(ortodontistaTratamento, clinicaTratamento);
-
-  setEtapa("datas");
-  return;
+  setDatasDisponiveis(data.datasDisponiveis || []);
+  setHorariosPorData(data.horariosPorData || {});
 }
 
-      await carregarClinicas();
-      setEtapa("unidade");
-    } catch {
-      setErro("Não foi possível carregar os dados para agendamento.");
-    }
-  }
+  async function selecionarCarteirinha(
+    carteirinha: Carteirinha
+  ) {
+    setCarteirinhaSelecionada(carteirinha);
 
-  async function selecionarUnidade(clinica: Clinica) {
-    setClinicaSelecionada(clinica);
-    setProcedimentoClinico(null);
-    setDentistaSelecionado(null);
-    setDentistasDisponiveis([]);
-    setDatasDisponiveis([]);
-    setHorariosPorData({});
-    setDataSelecionada("");
-    setHorarioSelecionado("");
-    setErro("");
+    const responseAgendamentos = await fetch(
+      `/api/agendamentos?carteirinha=${carteirinha.numero}`
+    );
 
-    if (carteirinhaSelecionada?.tipo === "clinico") {
-      setEtapa("procedimento");
+    const dadosAgendamentos =
+      await responseAgendamentos.json();
+
+    if (
+      dadosAgendamentos.possuiAgendamentoFuturo &&
+      dadosAgendamentos.agendamentos?.length > 0
+    ) {
+      setAgendamentoExistente(
+        dadosAgendamentos.agendamentos[0]
+      );
+
+      setEtapa("agendamento-existente");
+
       return;
     }
 
-    if (carteirinhaSelecionada?.tipo === "ortodontia") {
-      try {
-        const response = await fetch(
-          `/api/ultimo-ortodontista?carteirinha=${carteirinhaSelecionada.numero}&idClinica=${clinica.id}`
-        );
-
-        const data = await response.json();
-
-        if (!data.possuiOrtodontistaAnterior) {
-          setEtapa("inicio-ortodontico");
-          return;
-        }
-
-        const ortodontista = {
-          id: data.ortodontista.id,
-          nome: data.ortodontista.nome,
-          especialidade: "Ortodontia",
-        };
-
-        setDentistaSelecionado(ortodontista);
-
-        await carregarDatasDisponiveis(ortodontista, clinica);
-
-        setEtapa("datas");
-      } catch {
-        setErro("Não foi possível carregar o ortodontista do tratamento.");
-      }
-    }
-  }
-
-  async function selecionarProcedimento(procedimento: ProcedimentoClinico) {
-    setProcedimentoClinico(procedimento);
-    setDentistaSelecionado(null);
-    setDentistasDisponiveis([]);
-    setDatasDisponiveis([]);
-    setHorariosPorData({});
-    setDataSelecionada("");
-    setHorarioSelecionado("");
-    setErro("");
-
-    if (procedimento === "AUTORIZAÇÃO | RAIO X") {
-      return;
-    }
-
-    if (!clinicaSelecionada) {
-      setErro("Selecione uma unidade antes de continuar.");
-      return;
-    }
-
-    try {
+    if (carteirinha.tipo === "ortodontia") {
       const response = await fetch(
-        `/api/dentistas?idClinica=${clinicaSelecionada.id}&tipo=clinico`
+        `/api/ultimo-ortodontista?carteirinha=${carteirinha.numero}`
       );
 
       const data = await response.json();
 
-      if (data.success) {
-        setDentistasDisponiveis(data.dentistas);
+      if (!data.possuiOrtodontistaAnterior) {
+        setEtapa("inicio-ortodontico");
+        return;
       }
 
-      setEtapa("dentista");
-    } catch {
-      setErro("Não foi possível carregar os dentistas.");
-    }
-  }
+      const clinica = data.clinica;
 
-  async function selecionarDentista(dentista: Dentista) {
-    setDentistaSelecionado(dentista);
-    setDataSelecionada("");
-    setHorarioSelecionado("");
-    setErro("");
+      const dentista = {
+        id: data.ortodontista.id,
+        nome: data.ortodontista.nome,
+        especialidade: "Ortodontia",
+      };
 
-    if (!clinicaSelecionada) {
-      setErro("Unidade não selecionada.");
+      setClinicaSelecionada(clinica);
+      setDentistaSelecionado(dentista);
+
+      await carregarDatasDisponiveis(
+  dentista,
+  clinica,
+  carteirinha
+);
+
+      setEtapa("datas");
+
       return;
     }
 
-    await carregarDatasDisponiveis(dentista, clinicaSelecionada);
+    await carregarClinicas();
+
+    setEtapa("unidade");
+  }
+
+  async function selecionarUnidade(
+    clinica: Clinica
+  ) {
+    setClinicaSelecionada(clinica);
+
+    setEtapa("procedimento");
+  }
+
+  async function selecionarProcedimento(
+    procedimento: ProcedimentoClinico
+  ) {
+    setProcedimentoClinico(procedimento);
+
+    if (procedimento === "AUTORIZAÇÃO | RAIO X") {
+      window.open(WHATSAPP_URL, "_blank");
+      return;
+    }
+
+    if (!clinicaSelecionada) return;
+
+    const response = await fetch(
+      `/api/dentistas?idClinica=${clinicaSelecionada.id}&tipo=clinico`
+    );
+
+    const data = await response.json();
+
+    setDentistasDisponiveis(data.dentistas || []);
+
+    setEtapa("dentista");
+  }
+
+  async function selecionarDentista(
+    dentista: Dentista
+  ) {
+    if (!clinicaSelecionada) return;
+
+    setDentistaSelecionado(dentista);
+
+    await carregarDatasDisponiveis(
+      dentista,
+      clinicaSelecionada
+    );
 
     setEtapa("datas");
   }
 
   function selecionarData(data: string) {
     setDataSelecionada(data);
-    setHorarioSelecionado("");
+
     setEtapa("horarios");
   }
 
   function selecionarHorario(horario: string) {
     setHorarioSelecionado(horario);
+
     setEtapa("resumo");
   }
 
   async function confirmarAgendamento() {
-  if (
-    !carteirinhaSelecionada ||
-    !clinicaSelecionada ||
-    !dentistaSelecionado ||
-    !dataSelecionada ||
-    !horarioSelecionado
-  ) {
-    setErro("Dados do agendamento incompletos.");
-    return;
-  }
-
-  setErro("");
-  setLoading(true);
-
-  try {
-    const response = await fetch("/api/agendar", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        idClinica: clinicaSelecionada.id,
-        idCorpoClinico: dentistaSelecionado.id,
-        dataEvento: dataSelecionada,
-        horaInicio: horarioSelecionado,
-        codCarteirinha: carteirinhaSelecionada.numero,
-      }),
-    });
-
-    const data = await response.json();
-    const raw = JSON.parse(data.raw || "{}");
-
-    if (!raw.success) {
-      throw new Error(raw.message || "Não foi possível realizar o agendamento.");
+    if (
+      !carteirinhaSelecionada ||
+      !clinicaSelecionada ||
+      !dentistaSelecionado
+    ) {
+      return;
     }
 
-    setEtapa("confirmacao");
-  } catch (error: any) {
-    setErro(error.message || "Erro ao finalizar agendamento.");
-  } finally {
-    setLoading(false);
-  }
-}
+    try {
+      setLoading(true);
 
-  function novoAgendamento() {
-    setCpf("");
-    setErro("");
-    setBeneficiario(null);
-    setCarteirinhaSelecionada(null);
-    setClinicaSelecionada(null);
-    setProcedimentoClinico(null);
-    setDentistaSelecionado(null);
-    setDentistasDisponiveis([]);
-    setDatasDisponiveis([]);
-    setHorariosPorData({});
-    setDataSelecionada("");
-    setHorarioSelecionado("");
-    setAgendamentoExistente(null);
-    setEtapa("cpf");
+      const response = await fetch("/api/agendar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          idClinica: clinicaSelecionada.id,
+          idCorpoClinico: dentistaSelecionado.id,
+          dataEvento: dataSelecionada,
+          horaInicio: horarioSelecionado,
+          codCarteirinha:
+            carteirinhaSelecionada.numero,
+        }),
+      });
+
+      const data = await response.json();
+
+      const raw = JSON.parse(data.raw || "{}");
+
+      if (!raw.success) {
+        throw new Error(
+          raw.message ||
+            "Não foi possível realizar o agendamento."
+        );
+      }
+
+      setEtapa("confirmacao");
+    } catch (error: any) {
+      setErro(
+        error.message ||
+          "Erro ao finalizar agendamento."
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   function voltar() {
-    if (etapa === "carteirinha") setEtapa("cpf");
-    else if (etapa === "unidade") setEtapa("carteirinha");
-    else if (etapa === "procedimento") setEtapa("unidade");
-    else if (etapa === "dentista") setEtapa("procedimento");
-    else if (etapa === "datas") {
-      if (carteirinhaSelecionada?.tipo === "ortodontia") setEtapa("unidade");
-      else setEtapa("dentista");
-    } else if (etapa === "horarios") setEtapa("datas");
-    else if (etapa === "resumo") setEtapa("horarios");
-    else if (etapa === "agendamento-existente") setEtapa("carteirinha");
-    else if (etapa === "inicio-ortodontico") setEtapa("unidade");
+    if (etapa === "carteirinha") {
+      setEtapa("cpf");
+    } else if (etapa === "unidade") {
+      setEtapa("carteirinha");
+    } else if (etapa === "procedimento") {
+      setEtapa("unidade");
+    } else if (etapa === "dentista") {
+      setEtapa("procedimento");
+    } else if (etapa === "datas") {
+      if (
+        carteirinhaSelecionada?.tipo ===
+        "ortodontia"
+      ) {
+        setEtapa("carteirinha");
+      } else {
+        setEtapa("dentista");
+      }
+    } else if (etapa === "horarios") {
+      setEtapa("datas");
+    } else if (etapa === "resumo") {
+      setEtapa("horarios");
+    }
   }
-
-  const procedimentosComEncaminhamento = [
-    "CANAL",
-    "PERIODONTIA",
-    "RECONSTRUÇÃO",
-    "CIRURGIA",
-  ];
 
   const mostrarObservacaoEncaminhamento =
     procedimentoClinico !== null &&
-    procedimentosComEncaminhamento.includes(procedimentoClinico);
+    PROCEDIMENTOS_COM_ENCAMINHAMENTO.includes(
+      procedimentoClinico
+    );
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-blue-100 flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-md rounded-3xl shadow-xl p-8 border border-slate-100">
-        {etapa !== "cpf" && etapa !== "confirmacao" && (
-          <button
-            onClick={voltar}
-            className="mb-6 text-sm font-semibold text-slate-500 hover:text-slate-800"
-          >
-            ← Voltar
-          </button>
-        )}
+        {etapa !== "cpf" &&
+          etapa !== "confirmacao" && (
+            <button
+              onClick={voltar}
+              className="mb-6 text-sm font-semibold text-slate-500"
+            >
+              ← Voltar
+            </button>
+          )}
 
-        {erro && etapa !== "cpf" && (
+        {erro && (
           <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
             {erro}
           </div>
@@ -501,120 +455,197 @@ export default function Home() {
           />
         )}
 
-        {etapa === "carteirinha" && beneficiario && (
-          <StepCarteirinha
-            beneficiario={beneficiario}
-            onSelecionarCarteirinha={selecionarCarteirinha}
-          />
-        )}
+        {etapa === "carteirinha" &&
+          beneficiario && (
+            <StepCarteirinha
+              beneficiario={beneficiario}
+              onSelecionarCarteirinha={
+                selecionarCarteirinha
+              }
+            />
+          )}
 
-        {etapa === "agendamento-existente" && agendamentoExistente && (
-          <StepAgendamentoExistente
-            agendamento={agendamentoExistente}
-            onVoltar={() => setEtapa("carteirinha")}
-          />
-        )}
+        {etapa === "agendamento-existente" &&
+          agendamentoExistente && (
+            <StepAgendamentoExistente
+              agendamento={
+                agendamentoExistente
+              }
+              onVoltar={() =>
+                setEtapa("carteirinha")
+              }
+            />
+          )}
 
         {etapa === "inicio-ortodontico" && (
-          <>
-            <h1 className="text-2xl font-bold text-slate-800">
-              Início de tratamento ortodôntico
+          <div>
+            <h1 className="text-2xl font-bold">
+              Início de tratamento
             </h1>
 
-            <p className="text-slate-500 mt-2">
-              Para iniciar o tratamento ortodôntico, o agendamento deve ser
-              realizado por nossa equipe.
-            </p>
-
             <a
-              href={whatsappUrl}
+              href={WHATSAPP_URL}
               target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full text-center mt-6 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold py-3 rounded-xl shadow-lg"
+              className="block mt-6 bg-green-600 text-white text-center py-3 rounded-xl"
             >
               Falar no WhatsApp
             </a>
-          </>
+          </div>
         )}
 
         {etapa === "unidade" && (
           <StepUnidade
-            carteirinhaDescricao={carteirinhaSelecionada?.descricao}
+            carteirinhaDescricao={
+              carteirinhaSelecionada?.descricao
+            }
             clinicas={clinicas}
-            onSelecionarUnidade={selecionarUnidade}
+            onSelecionarUnidade={
+              selecionarUnidade
+            }
           />
         )}
 
         {etapa === "procedimento" && (
           <StepProcedimento
-            clinicaSelecionada={clinicaSelecionada?.nome || ""}
-            procedimentos={procedimentosClinicos}
-            procedimentoSelecionado={procedimentoClinico}
-            onSelecionarProcedimento={selecionarProcedimento}
-            whatsappUrl={whatsappUrl}
+            clinicaSelecionada={
+              clinicaSelecionada?.nome || ""
+            }
+            procedimentos={
+              PROCEDIMENTOS_CLINICOS as unknown as string[]
+            }
+            procedimentoSelecionado={
+              procedimentoClinico
+            }
+            onSelecionarProcedimento={
+              selecionarProcedimento
+            }
+            whatsappUrl={WHATSAPP_URL}
           />
         )}
 
         {etapa === "dentista" && (
           <StepDentista
-            procedimentoClinico={procedimentoClinico}
-            mostrarObservacaoEncaminhamento={mostrarObservacaoEncaminhamento}
-            mensagemEncaminhamento={mensagemEncaminhamento}
+            procedimentoClinico={
+              procedimentoClinico
+            }
+            mostrarObservacaoEncaminhamento={
+              mostrarObservacaoEncaminhamento
+            }
+            mensagemEncaminhamento={
+              MENSAGEM_ENCAMINHAMENTO
+            }
             dentistas={dentistasDisponiveis}
-            onSelecionarDentista={selecionarDentista}
+            onSelecionarDentista={
+              selecionarDentista
+            }
           />
         )}
 
         {etapa === "datas" && (
           <StepDatas
-            datasDisponiveis={datasDisponiveis}
-            dataSelecionada={dataSelecionada}
-            onSelecionarData={selecionarData}
+            datasDisponiveis={
+              datasDisponiveis
+            }
+            dataSelecionada={
+              dataSelecionada
+            }
+            onSelecionarData={
+              selecionarData
+            }
           />
         )}
 
         {etapa === "horarios" && (
           <StepHorarios
-            horarios={horariosPorData[dataSelecionada] || []}
-            horarioSelecionado={horarioSelecionado}
-            onSelecionarHorario={selecionarHorario}
+            horarios={
+              horariosPorData[
+                dataSelecionada
+              ] || []
+            }
+            horarioSelecionado={
+              horarioSelecionado
+            }
+            onSelecionarHorario={
+              selecionarHorario
+            }
           />
         )}
 
-        {etapa === "resumo" && beneficiario && (
-          <>
-            <StepResumo
-              beneficiario={beneficiario}
-              carteirinhaSelecionada={carteirinhaSelecionada}
-              clinicaSelecionada={clinicaSelecionada?.nome || ""}
-              procedimentoClinico={procedimentoClinico}
-              dentistaSelecionado={dentistaSelecionado}
-              dataSelecionada={dataSelecionada}
-              horarioSelecionado={horarioSelecionado}
-              ehOrtodontia={carteirinhaSelecionada?.tipo === "ortodontia"}
+        {etapa === "resumo" &&
+          beneficiario &&
+          dentistaSelecionado && (
+            <>
+              <StepResumo
+                beneficiario={beneficiario}
+                carteirinhaSelecionada={
+                  carteirinhaSelecionada
+                }
+                clinicaSelecionada={
+                  clinicaSelecionada?.nome ||
+                  ""
+                }
+                procedimentoClinico={
+                  procedimentoClinico
+                }
+                dentistaSelecionado={
+                  dentistaSelecionado
+                }
+                dataSelecionada={
+                  dataSelecionada
+                }
+                horarioSelecionado={
+                  horarioSelecionado
+                }
+                ehOrtodontia={
+                  carteirinhaSelecionada?.tipo ===
+                  "ortodontia"
+                }
+              />
+
+{mostrarObservacaoEncaminhamento && (
+  <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
+    {MENSAGEM_ENCAMINHAMENTO}
+  </div>
+)}
+
+              <button
+                onClick={
+                  confirmarAgendamento
+                }
+                disabled={loading}
+                className="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl"
+              >
+                {loading
+                  ? "Finalizando..."
+                  : "Finalizar agendamento"}
+              </button>
+            </>
+          )}
+
+        {etapa === "confirmacao" &&
+          beneficiario &&
+          dentistaSelecionado && (
+            <StepConfirmacao
+              paciente={
+                beneficiario.nome
+              }
+              clinica={
+                clinicaSelecionada?.nome ||
+                ""
+              }
+              dentista={
+                dentistaSelecionado.nome
+              }
+              horario={`${dataSelecionada} às ${horarioSelecionado}`}
+              procedimento={
+                procedimentoClinico
+              }
+              protocolo={protocolo}
+              onNovoAgendamento={() =>
+                window.location.reload()
+              }
             />
-
-         <button
-  onClick={confirmarAgendamento}
-  disabled={loading}
-  className="w-full mt-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 transition text-white font-semibold py-3 rounded-xl shadow-lg disabled:opacity-60"
->
-  {loading ? "Finalizando..." : "Finalizar agendamento"}
-</button>
-          </>
-        )}
-
-        {etapa === "confirmacao" && beneficiario && dentistaSelecionado && (
-          <StepConfirmacao
-            paciente={beneficiario.nome}
-            clinica={clinicaSelecionada?.nome || ""}
-            dentista={dentistaSelecionado.nome}
-            horario={`${dataSelecionada} às ${horarioSelecionado}`}
-            procedimento={procedimentoClinico}
-            protocolo={protocolo}
-            onNovoAgendamento={novoAgendamento}
-          />
-        )}
+          )}
       </div>
     </main>
   );
