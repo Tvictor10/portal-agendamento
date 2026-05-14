@@ -118,11 +118,17 @@ export async function GET(request: Request) {
           ? "ortodontia"
           : "clinico";
 
+
         return {
           idPessoa: item.idPessoa,
           idPessoaContrato: item.idPessoaContrato,
           beneficiario: item.beneficiario,
           cpf: item.cpf,
+
+         cpfRespFinanceiro: item.cpfRespFinanceiro,
+         idPessoaRespFinanceiro: item.idPessoaRespFinanceiro,
+         nomeRespFinanceiro: item.nomeRespFinanceiro,
+
           codCarteirinha: item.codCarteirinha,
           numero: item.codCarteirinha,
           plano: item.plano,

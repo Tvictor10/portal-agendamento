@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 import { useState } from "react";
 
@@ -70,6 +71,7 @@ export default function Home() {
   const [cpf, setCpf] = useState("");
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mensagemLoading, setMensagemLoading] = useState("");
 
   const [beneficiario, setBeneficiario] =
     useState<Beneficiario | null>(null);
@@ -144,6 +146,28 @@ export default function Home() {
         data.message || "Erro ao consultar beneficiário"
       );
     }
+
+    if (!data.carteirinhas || data.carteirinhas.length === 0) {
+  throw new Error(
+    "CPF não encontrado, verifique os dados inseridos."
+  );
+}
+
+const cpfResponsavel =
+  data.carteirinhas?.[0]?.cpfRespFinanceiro?.replace(/\D/g, "") ||
+  cpfLimpo;
+
+const financeiroResponse = await fetch(
+  `/api/financeiro?cpf=${cpfResponsavel}`
+);
+
+const financeiro = await financeiroResponse.json();
+
+if (financeiro.inadimplente) {
+  throw new Error(
+    "Seu agendamento precisa ser realizado por nossa equipe. Entre em contato pelo WhatsApp."
+  );
+}
 
    if (
   !data.carteirinhas ||
@@ -429,6 +453,15 @@ return {
   return (
     <main className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-blue-100 flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-md rounded-3xl shadow-xl p-8 border border-slate-100">
+        <div className="flex justify-center mb-6">
+  <Image
+    src="/logo.png"
+    alt="Logo"
+    width={180}
+    height={60}
+    priority
+  />
+</div>
         {etapa !== "cpf" &&
           etapa !== "confirmacao" && (
             <button
@@ -444,6 +477,12 @@ return {
             {erro}
           </div>
         )}
+
+        {mensagemLoading && (
+  <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700">
+    {mensagemLoading}
+  </div>
+)}
 
         {etapa === "cpf" && (
           <StepCpf
