@@ -549,9 +549,7 @@ return {
             clinicaSelecionada={
               clinicaSelecionada?.nome || ""
             }
-            procedimentos={
-              PROCEDIMENTOS_CLINICOS as unknown as string[]
-            }
+            procedimentos={PROCEDIMENTOS_CLINICOS as any}
             procedimentoSelecionado={
               procedimentoClinico
             }
