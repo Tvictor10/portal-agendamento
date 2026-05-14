@@ -545,18 +545,12 @@ return {
         )}
 
         {etapa === "procedimento" && (
-          <StepProcedimento
-            clinicaSelecionada={
-              clinicaSelecionada?.nome || ""
-            }
-            procedimentos={PROCEDIMENTOS_CLINICOS as any}
-            procedimentoSelecionado={
-              procedimentoClinico
-            }
-            onSelecionarProcedimento={
-              selecionarProcedimento
-            }
-            whatsappUrl={WHATSAPP_URL}
+         <StepProcedimento
+  clinicaSelecionada={clinicaSelecionada?.nome || ""}
+  procedimentos={PROCEDIMENTOS_CLINICOS as unknown as ProcedimentoClinico[]}
+  procedimentoSelecionado={procedimentoClinico}
+  onSelecionarProcedimento={selecionarProcedimento}
+  whatsappUrl={WHATSAPP_URL}
           />
         )}
 
