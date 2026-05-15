@@ -566,9 +566,10 @@ return {
               MENSAGEM_ENCAMINHAMENTO
             }
             dentistas={dentistasDisponiveis}
-            onSelecionarDentista={
-              selecionarDentista
-            }
+            dentistaSelecionado={dentistaSelecionado}
+          onSelecionarDentista={(dentista) =>
+  selecionarDentista(dentista)
+}
           />
         )}
 

@@ -43,11 +43,19 @@ export async function GET(request: Request) {
 
     const hoje = new Date();
 
-    const mes = String(hoje.getMonth() + 1).padStart(2, "0");
-    const ano = hoje.getFullYear();
+const diaInicio = String(hoje.getDate()).padStart(2, "0");
+const mesInicio = String(hoje.getMonth() + 1).padStart(2, "0");
+const anoInicio = hoje.getFullYear();
 
-    const dataInicio = `${mes}/01/${ano}`;
-    const dataFim = `${mes}/31/${ano}`;
+const futuro = new Date();
+futuro.setMonth(futuro.getMonth() + 1);
+
+const diaFim = String(futuro.getDate()).padStart(2, "0");
+const mesFim = String(futuro.getMonth() + 1).padStart(2, "0");
+const anoFim = futuro.getFullYear();
+
+const dataInicio = `${mesInicio}/${diaInicio}/${anoInicio}`;
+const dataFim = `${mesFim}/${diaFim}/${anoFim}`;
 
     const url =
       `${process.env.API_BASE_URL}/agenda-beneficiario` +
@@ -64,7 +72,24 @@ export async function GET(request: Request) {
       },
     });
 
-    const json = await response.json();
+    const text = await response.text();
+
+let json: any = {};
+
+try {
+  json = JSON.parse(text);
+} catch {
+  return Response.json(
+    {
+      success: false,
+      message: "A API de agendamentos não retornou JSON válido",
+      status: response.status,
+      url,
+      raw: text,
+    },
+    { status: 500 }
+  );
+}
 
     const hojeSemHora = new Date();
     hojeSemHora.setHours(0, 0, 0, 0);
@@ -78,7 +103,7 @@ export async function GET(request: Request) {
 
       dataAgenda.setHours(0, 0, 0, 0);
 
-      return dataAgenda > hojeSemHora;
+      return dataAgenda >= hojeSemHora;
     });
 
     return Response.json({

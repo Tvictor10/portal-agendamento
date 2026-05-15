@@ -8,12 +8,17 @@ type Props = {
   dentistas: Dentista[];
   dentistaSelecionado?: Dentista | null;
   onSelecionarDentista: (dentista: Dentista) => void;
+  procedimentoClinico?: string | null;
+  mostrarObservacaoEncaminhamento?: boolean;
+  mensagemEncaminhamento?: string;
 };
 
 export default function StepDentista({
   dentistas,
   dentistaSelecionado,
   onSelecionarDentista,
+  mostrarObservacaoEncaminhamento,
+  mensagemEncaminhamento,
 }: Props) {
   return (
     <div className="mt-6">
@@ -25,6 +30,12 @@ export default function StepDentista({
         Selecione o profissional desejado.
       </p>
 
+      {mostrarObservacaoEncaminhamento && (
+        <div className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
+          {mensagemEncaminhamento}
+        </div>
+      )}
+
       {dentistas.length === 0 ? (
         <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
           <p>
@@ -33,7 +44,7 @@ export default function StepDentista({
           </p>
 
           <a
-            href="https://wa.me/5584988024098"
+            href="https://wa.me/5584999999999"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-4 block rounded-xl bg-green-600 px-4 py-3 text-center font-semibold text-white transition hover:bg-green-700"
@@ -66,6 +77,7 @@ export default function StepDentista({
           ))}
         </div>
       )}
+
     </div>
   );
 }
