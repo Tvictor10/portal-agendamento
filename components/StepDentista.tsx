@@ -1,7 +1,7 @@
 type Dentista = {
   id: number;
   nome: string;
-  especialidade?: string;
+  especialidade: string;
 };
 
 type Props = {
