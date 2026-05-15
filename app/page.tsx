@@ -333,7 +333,7 @@ return {
     if (!clinicaSelecionada) return;
 
     const response = await fetch(
-      `/api/dentistas?idClinica=${clinicaSelecionada.id}&tipo=clinico`
+      `/api/dentistas?idClinica=${clinicaSelecionada.id}&tipo=clinico&procedimento=${encodeURIComponent(procedimento)}`
     );
 
     const data = await response.json();
