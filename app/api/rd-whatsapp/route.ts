@@ -2,7 +2,7 @@ const BASE_URL = process.env.RD_TALLOS_BASE_URL!;
 const TOKEN = process.env.RD_API_TOKEN!;
 
 const TEMPLATE_ORIGINAL =
-  "Olá, {{1}}! Seu agendamento na Dental Med foi confirmado. 📅 Data: {{2}} ⏰ Horário: {{3}} 📍 Unidade: {{4}} 🦷 Profissional: {{5}} Em caso de dúvidas, responda esta mensagem.";
+  "Olá, @NOMECLIENTE! Seu agendamento na Dental Med foi confirmado. 📅 Data: @DATA ⏰ Horário: @HORA 📍 Unidade: @NUCLEO 🦷 Profissional: @PRESTADOR Em caso de dúvidas, responda esta mensagem.";
 
 async function lerResposta(response: Response) {
   const text = await response.text();
