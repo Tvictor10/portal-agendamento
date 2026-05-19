@@ -79,10 +79,7 @@ export async function POST(
   request: Request
 ) {
 
-  return Response.json({
-    success: true,
-    disabled: true,
-  });
+
 
   try {
     const body = await request.json();
