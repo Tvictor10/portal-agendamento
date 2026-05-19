@@ -6,7 +6,8 @@ function converterDataBR(data: string) {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const cpf = searchParams.get("cpf");
+
+    const cpf = String(searchParams.get("cpf") || "").replace(/\D/g, "");
 
     if (!cpf) {
       return Response.json(
@@ -21,7 +22,7 @@ export async function GET(request: Request) {
     const auth = Buffer.from(`${usuario}:${senha}`).toString("base64");
 
     const url =
-      `${process.env.FINANCEIRO_BASE_URL}/integracao/api/Geral/ObtemCobrancas` +
+      `${process.env.FINANCEIRO_BASE_URL}/integracao/api/Geral/ObtemPendFinanceiro` +
       `?cpf=${cpf}`;
 
     const response = await fetch(url, {
@@ -34,19 +35,19 @@ export async function GET(request: Request) {
 
     const text = await response.text();
 
-let json: any = {};
+    let json: any = {};
 
-try {
-  json = JSON.parse(text);
-} catch {
-  return Response.json({
-    success: false,
-    status: response.status,
-    url,
-    raw: text,
-    message: "A API financeira não retornou JSON válido",
-  });
-}
+    try {
+      json = JSON.parse(text);
+    } catch {
+      return Response.json({
+        success: false,
+        status: response.status,
+        url,
+        raw: text,
+        message: "A API financeira não retornou JSON válido",
+      });
+    }
 
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
@@ -59,14 +60,14 @@ try {
       const vencimento = converterDataBR(item.dt_vencimento_recb);
       vencimento.setHours(0, 0, 0, 0);
 
+      const limiteBloqueio = new Date(vencimento);
+      limiteBloqueio.setDate(limiteBloqueio.getDate() + 30);
+
+      const vencidaMaisDe30Dias = limiteBloqueio < hoje;
       const semPagamento = !item.dt_recebimento_recb;
       const semCancelamento = !item.dt_cancelamento_recb;
-      const limiteBloqueio = new Date(vencimento);
-limiteBloqueio.setDate(limiteBloqueio.getDate() + 30);
 
-const vencida = limiteBloqueio < hoje;
-
-      return vencida && semPagamento && semCancelamento;
+      return vencidaMaisDe30Dias && semPagamento && semCancelamento;
     });
 
     return Response.json({

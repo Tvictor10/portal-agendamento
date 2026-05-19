@@ -1,8 +1,4 @@
-const BASE_URL = process.env.RD_TALLOS_BASE_URL!;
 const TOKEN = process.env.RD_API_TOKEN!;
-
-const TEMPLATE_ORIGINAL =
-  "Olá, @NOMECLIENTE! Seu agendamento na Dental Med foi confirmado. 📅 Data: @DATA ⏰ Horário: @HORA 📍 Unidade: @NUCLEO 🦷 Profissional: @PRESTADOR Em caso de dúvidas, responda esta mensagem.";
 
 async function lerResposta(response: Response) {
   const text = await response.text();
@@ -18,46 +14,19 @@ function limparTelefone(telefone: string) {
   return String(telefone || "").replace(/\D/g, "");
 }
 
-async function buscarContatoPorTelefone(
-  telefone: string
+async function enviarMensagem(
+  telefone: string,
+  nome: string,
+  dataAgendamento: string,
+  horario: string,
+  unidade: string,
+  dentista: string
 ) {
   const telefoneLimpo =
     limparTelefone(telefone);
 
   const url =
-    `${BASE_URL}/contacts/${telefoneLimpo}/exists`;
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${TOKEN}`,
-      accept: "application/json",
-    },
-  });
-
-  const data = await lerResposta(response);
-
-  console.log("BUSCA CONTATO:", {
-    url,
-    status: response.status,
-    data,
-  });
-
-  if (!response.ok) {
-    return null;
-  }
-
-  return data.data || null;
-}
-
-async function criarContato(
-  nome: string,
-  telefone: string
-) {
-  const telefoneLimpo =
-    limparTelefone(telefone);
-
-  const url = `${BASE_URL}/contacts`;
+    "https://api.tallos.com.br/v3/messages/template/send";
 
   const response = await fetch(url, {
     method: "POST",
@@ -67,59 +36,30 @@ async function criarContato(
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      full_name: nome,
-      cel_phone: telefoneLimpo,
-      integration: "integration-1",
-    }),
-  });
+      country_code: "55",
 
-  const data = await lerResposta(response);
+      recipient_number:
+        telefoneLimpo,
 
-  console.log("CRIAR CONTATO:", {
-    url,
-    status: response.status,
-    data,
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `Erro ao criar contato RD. Status ${response.status}. Retorno: ${JSON.stringify(
-        data
-      )}`
-    );
-  }
-
-  return data.data || data;
-}
-
-async function enviarMensagem(
-  contactId: string,
-  mensagem: string
-) {
-  const url =
-    `${BASE_URL}/messages/${contactId}/send-template-filled`;
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${TOKEN}`,
-      accept: "application/json",
-      "content-type":
-        "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams({
       sent_by: "bot",
-      integration: "integration-1",
-      template_message:
-        TEMPLATE_ORIGINAL,
-      message: mensagem,
+
+      template_message_id:
+        process.env
+          .RD_TEMPLATE_CONFIRMACAO_ID,
+
+      variables: [
+        nome,
+        dataAgendamento,
+        horario,
+        unidade,
+        dentista,
+      ],
     }),
   });
 
   const data = await lerResposta(response);
 
   console.log("ENVIAR TEMPLATE:", {
-    url,
     status: response.status,
     data,
   });
@@ -138,76 +78,46 @@ async function enviarMensagem(
 export async function POST(
   request: Request
 ) {
+
+  return Response.json({
+    success: true,
+    disabled: true,
+  });
+
   try {
     const body = await request.json();
 
     const nome = body.nome;
-    const telefone = limparTelefone(
-      body.telefone
-    );
+
+    const telefone =
+      limparTelefone(
+        body.telefone
+      );
 
     const dataAgendamento =
       body.data;
 
-    const horario = body.horario;
+    const horario =
+      body.horario;
 
-    const unidade = body.unidade;
+    const unidade =
+      body.unidade;
 
-    const dentista = body.dentista;
-
-    let contato =
-      await buscarContatoPorTelefone(
-        telefone
-      );
-
-    if (!contato) {
-      contato = await criarContato(
-        nome,
-        telefone
-      );
-    }
-
-    const contatoId =
-      contato?._id ||
-      contato?.id ||
-      contato?.contact_id ||
-      contato?.contact?._id ||
-      contato?.contact?.id;
-
-    if (!contatoId) {
-      return Response.json(
-        {
-          success: false,
-          message:
-            "Não foi possível obter o ID do contato.",
-          contato,
-        },
-        { status: 400 }
-      );
-    }
-
-    const mensagem = [
-      `Olá, ${nome}!`,
-      "",
-      "Seu agendamento na Dental Med foi confirmado.",
-      "",
-      `📅 Data: ${dataAgendamento}`,
-      `⏰ Horário: ${horario}`,
-      `📍 Unidade: ${unidade}`,
-      `🦷 Profissional: ${dentista}`,
-      "",
-      "Em caso de dúvidas, responda esta mensagem.",
-    ].join("\n");
+    const dentista =
+      body.dentista;
 
     const envio =
       await enviarMensagem(
-        contatoId,
-        mensagem
+        telefone,
+        nome,
+        dataAgendamento,
+        horario,
+        unidade,
+        dentista
       );
 
     return Response.json({
       success: true,
-      contatoId,
       envio,
     });
   } catch (error: any) {

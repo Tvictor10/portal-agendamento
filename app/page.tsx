@@ -153,12 +153,17 @@ export default function Home() {
   );
 }
 
-const cpfResponsavel =
-  data.carteirinhas?.[0]?.cpfRespFinanceiro?.replace(/\D/g, "") ||
+const carteirinhaFinanceira =
+  data.carteirinhas?.[0];
+
+const cpfConsultaFinanceira =
+  carteirinhaFinanceira?.cpfRespFinanceiro?.replace(/\D/g, "") ||
+  carteirinhaFinanceira?.cpfTitular?.replace(/\D/g, "") ||
+  carteirinhaFinanceira?.cpf?.replace(/\D/g, "") ||
   cpfLimpo;
 
 const financeiroResponse = await fetch(
-  `/api/financeiro?cpf=${cpfResponsavel}`
+  `/api/financeiro?cpf=${cpfConsultaFinanceira}`
 );
 
 const financeiro = await financeiroResponse.json();
