@@ -410,6 +410,7 @@ return {
         );
       }
 
+      /*
       await fetch("/api/rd-whatsapp", {
   method: "POST",
   headers: {
@@ -424,7 +425,7 @@ return {
     unidade: clinicaSelecionada.nome,
     dentista: dentistaSelecionado.nome,
   }),
-});
+}); */
 
       setEtapa("confirmacao");
     } catch (error: any) {
