@@ -43,6 +43,7 @@ type Carteirinha = {
 
 type Beneficiario = {
   nome: string;
+  celular?: string;
   carteirinhas: Carteirinha[];
 };
 
@@ -180,6 +181,7 @@ if (financeiro.inadimplente) {
 
 return {
   nome: data.beneficiario,
+  celular: data.carteirinhas?.[0]?.celular || "",
   carteirinhas: data.carteirinhas,
 };
 
@@ -407,6 +409,22 @@ return {
             "Não foi possível realizar o agendamento."
         );
       }
+
+      await fetch("/api/rd-whatsapp", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    nome: beneficiario?.nome || "",
+    telefone:
+  beneficiario?.celular || "",
+    data: dataSelecionada,
+    horario: horarioSelecionado,
+    unidade: clinicaSelecionada.nome,
+    dentista: dentistaSelecionado.nome,
+  }),
+});
 
       setEtapa("confirmacao");
     } catch (error: any) {
