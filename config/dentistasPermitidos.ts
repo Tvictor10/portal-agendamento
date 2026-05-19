@@ -32,9 +32,9 @@ export const DENTISTAS_PERMITIDOS = {
       "BARBARA FERNANDA N DA SILVA EIRELI - CENTRO",
     ],
 
-    CIRURGIA: [
+    /*CIRURGIA: [
       "BRUNO ALEXANDER VALE DE ARAÚJO - CENTRO",
-    ],
+    ],*/
 
     RECONSTRUÇÃO: [
       "LARYSSA QUEIROZ - (RECONSTRUÇÃO)",
