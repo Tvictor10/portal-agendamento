@@ -9,6 +9,8 @@ export async function GET(request: Request) {
 
     const cpf = String(searchParams.get("cpf") || "").replace(/\D/g, "");
 
+    const carteirinha = String(searchParams.get("carteirinha") || "").replace(/\D/g, "");
+
     if (!cpf) {
       return Response.json(
         { success: false, message: "CPF não informado" },
@@ -67,7 +69,13 @@ export async function GET(request: Request) {
       const semPagamento = !item.dt_recebimento_recb;
       const semCancelamento = !item.dt_cancelamento_recb;
 
-      return vencidaMaisDe30Dias && semPagamento && semCancelamento;
+      
+ return (
+  vencidaMaisDe30Dias &&
+  semPagamento &&
+  semCancelamento
+);
+
     });
 
     return Response.json({
