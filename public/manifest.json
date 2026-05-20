@@ -4,7 +4,12 @@
   "description": "Portal de Agendamento Dental Med",
   "start_url": "https://agendamento.planodentalmed.com.br/",
   "scope": "https://agendamento.planodentalmed.com.br/",
-  "display": "standalone",
+  "display": "fullscreen",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
   "background_color": "#ffffff",
   "theme_color": "#0f62fe",
   "orientation": "portrait",
