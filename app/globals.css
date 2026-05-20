@@ -25,4 +25,35 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+@media (prefers-color-scheme: dark) {
+  body,
+  main {
+    background-color: #f8fbff !important;
+    color: #0f172a !important;
+  }
+
+  button,
+  a,
+  div,
+  p,
+  span,
+  h1,
+  h2,
+  h3 {
+    color: inherit;
+  }
+
+  button {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border-color: #dbe3ef !important;
+  }
+
+  button:disabled {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    opacity: 1 !important;
+  }
+}
+
 
