@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import RegisterSW from "../components/RegisterSW";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,21 +45,10 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
 
-      <body className="min-h-full flex flex-col">
-        {children}
-
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ("serviceWorker" in navigator) {
-                window.addEventListener("load", function () {
-                  navigator.serviceWorker.register("/sw.js");
-                });
-              }
-            `,
-          }}
-        />
-      </body>
+     <body className="min-h-full flex flex-col">
+  {children}
+  <RegisterSW />
+</body>
     </html>
   );
 }
