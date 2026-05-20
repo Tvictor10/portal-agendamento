@@ -15,17 +15,13 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Dental Med Agendamento",
   description: "Portal de Agendamento Dental Med",
-
   manifest: "/manifest.json",
-
   themeColor: "#0f62fe",
-
   appleWebApp: {
     capable: true,
     title: "Dental Med",
     statusBarStyle: "default",
   },
-
   icons: {
     icon: "/icon-192.png",
     apple: "/icon-192.png",
@@ -38,17 +34,31 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-  <html
-    lang="pt-BR"
-    className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-  >
-    <head>
-      <link rel="manifest" href="/manifest.json" />
-      <meta name="theme-color" content="#0f62fe" />
-      <link rel="apple-touch-icon" href="/icon-192.png" />
-    </head>
+    <html
+      lang="pt-BR"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0f62fe" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
+      </head>
 
-    <body className="min-h-full flex flex-col">{children}</body>
-  </html>
+      <body className="min-h-full flex flex-col">
+        {children}
+
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ("serviceWorker" in navigator) {
+                window.addEventListener("load", function () {
+                  navigator.serviceWorker.register("/sw.js");
+                });
+              }
+            `,
+          }}
+        />
+      </body>
+    </html>
   );
 }
