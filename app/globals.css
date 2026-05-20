@@ -25,24 +25,4 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  select,
-  option,
-  input,
-  textarea {
-    background-color: #ffffff !important;
-    color: #111111 !important;
-  }
 
-  select option {
-    background-color: #ffffff !important;
-    color: #111111 !important;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  input::placeholder,
-  textarea::placeholder {
-    color: #666666 !important;
-  }
-}
