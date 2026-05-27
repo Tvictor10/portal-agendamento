@@ -65,6 +65,20 @@ function segundaDaProximaSemana(data: Date) {
   return novaData;
 }
 
+function obterDataLimiteAgenda() {
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
+  const ano = hoje.getFullYear();
+  const mes = hoje.getMonth();
+
+  if (hoje.getDate() >= 25) {
+    return new Date(ano, mes + 2, 0);
+  }
+
+  return new Date(ano, mes + 1, 0);
+}
+
 async function buscarUltimoAgendamentoClinico(
   token: string,
   carteirinha: string
@@ -109,7 +123,7 @@ export async function GET(request: Request) {
     const idClinica = searchParams.get("idClinica");
     const idCorpoClinico = searchParams.get("idCorpoClinico");
     const carteirinha = searchParams.get("carteirinha");
-    const tipo = searchParams.get("tipo"); // clinico | ortodontia
+    const tipo = searchParams.get("tipo");
 
     if (!idClinica || !idCorpoClinico) {
       return Response.json(
@@ -127,8 +141,7 @@ export async function GET(request: Request) {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    const limite = new Date(hoje);
-    limite.setDate(limite.getDate() + 30);
+    const limite = obterDataLimiteAgenda();
 
     let dataMinimaPermitida = new Date(hoje);
 
@@ -211,6 +224,7 @@ export async function GET(request: Request) {
     return Response.json({
       success: true,
       dataMinimaPermitida: formatarDataBR(dataMinimaPermitida),
+      dataLimitePermitida: formatarDataBR(limite),
       datasDisponiveis,
       horariosPorData,
       raw: json,
