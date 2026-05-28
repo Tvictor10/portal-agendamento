@@ -74,6 +74,9 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [mensagemLoading, setMensagemLoading] = useState("");
 
+  const [arquivoEncaminhamento, setArquivoEncaminhamento] =
+  useState<File | null>(null);
+
   const [beneficiario, setBeneficiario] =
     useState<Beneficiario | null>(null);
 
@@ -381,6 +384,20 @@ return {
       return;
     }
 
+const exigeEncaminhamento =
+  procedimentoClinico &&
+  PROCEDIMENTOS_COM_ENCAMINHAMENTO.includes(
+    procedimentoClinico
+  );
+
+if (exigeEncaminhamento && !arquivoEncaminhamento) {
+  setErro(
+    "Para este procedimento é obrigatório anexar o encaminhamento."
+  );
+
+  return;
+}
+    
     try {
       setLoading(true);
 
@@ -409,6 +426,48 @@ return {
             "Não foi possível realizar o agendamento."
         );
       }
+
+      const exigeEncaminhamento =
+  procedimentoClinico &&
+  PROCEDIMENTOS_COM_ENCAMINHAMENTO.includes(
+    procedimentoClinico
+  );
+
+if (exigeEncaminhamento && arquivoEncaminhamento) {
+  const formData = new FormData();
+
+  formData.append("nome", beneficiario?.nome || "");
+  formData.append("cpf", cpf.replace(/\D/g, ""));
+  formData.append(
+    "carteirinha",
+    carteirinhaSelecionada.numero
+  );
+  formData.append(
+    "procedimento",
+    procedimentoClinico || ""
+  );
+  formData.append("data", dataSelecionada);
+  formData.append("horario", horarioSelecionado);
+  formData.append("unidade", clinicaSelecionada.nome);
+  formData.append("dentista", dentistaSelecionado.nome);
+  formData.append("arquivo", arquivoEncaminhamento);
+
+  const clickupResponse = await fetch(
+    "/api/clickup-encaminhamento",
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  const clickupData = await clickupResponse.json();
+
+  if (!clickupData.success) {
+    throw new Error(
+      "Agendamento realizado, mas não foi possível enviar o encaminhamento para análise."
+    );
+  }
+}
 
       /*
       await fetch("/api/rd-whatsapp", {
@@ -651,6 +710,9 @@ return {
                   carteirinhaSelecionada?.tipo ===
                   "ortodontia"
                 }
+
+                arquivoEncaminhamento={arquivoEncaminhamento}
+                setArquivoEncaminhamento={setArquivoEncaminhamento}
               />
 
 {mostrarObservacaoEncaminhamento && (

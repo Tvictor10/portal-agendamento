@@ -1,3 +1,5 @@
+import { PROCEDIMENTOS_COM_ENCAMINHAMENTO } from "../config/regrasAgendamento";
+
 type Carteirinha = {
   descricao: string;
   numero: string;
@@ -20,6 +22,9 @@ type Props = {
   dataSelecionada: string;
   horarioSelecionado: string;
   ehOrtodontia: boolean;
+
+  arquivoEncaminhamento: File | null;
+  setArquivoEncaminhamento: (file: File | null) => void;
 };
 
 export default function StepResumo({
@@ -31,6 +36,9 @@ export default function StepResumo({
   dataSelecionada,
   horarioSelecionado,
   ehOrtodontia,
+
+  arquivoEncaminhamento,
+  setArquivoEncaminhamento,
 }: Props) {
   return (
     <>
@@ -79,6 +87,41 @@ export default function StepResumo({
           <strong>Horário:</strong> {horarioSelecionado}
         </p>
       </div>
+
+      {procedimentoClinico &&
+        PROCEDIMENTOS_COM_ENCAMINHAMENTO.includes(
+          procedimentoClinico
+        ) && (
+          <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4">
+            <p className="text-sm font-semibold text-amber-800">
+              Encaminhamento obrigatório
+            </p>
+
+            <p className="mt-1 text-sm text-amber-700">
+              Para este procedimento é necessário anexar o encaminhamento
+              odontológico.
+            </p>
+
+            <input
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png"
+              className="mt-4 block w-full rounded-lg border border-slate-300 bg-white p-2 text-sm"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+
+                if (file) {
+                  setArquivoEncaminhamento(file);
+                }
+              }}
+            />
+
+            {arquivoEncaminhamento && (
+              <p className="mt-2 text-sm text-green-700">
+                Arquivo anexado: {arquivoEncaminhamento.name}
+              </p>
+            )}
+          </div>
+        )}
     </>
   );
 }
