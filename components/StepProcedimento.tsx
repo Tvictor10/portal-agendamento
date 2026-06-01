@@ -1,6 +1,6 @@
 type ProcedimentoClinico =
   | "AUTORIZAÇÃO | RAIO X"
-  | "CANAL"
+  | "CANAL | ENDODONTIA"
   | "PERIODONTIA"
   | "RECONSTRUÇÃO"
   | "CIRURGIA"

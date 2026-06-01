@@ -7,7 +7,7 @@ export const CLINICAS_PERMITIDAS = [
 
 export const PROCEDIMENTOS_CLINICOS = [
   "AUTORIZAÇÃO | RAIO X",
-  "CANAL",
+  "CANAL | ENDODONTIA",
   "PERIODONTIA",
   "RECONSTRUÇÃO",
   "CIRURGIA",
@@ -17,7 +17,7 @@ export const PROCEDIMENTOS_CLINICOS = [
 ] as const;
 
 export const PROCEDIMENTOS_COM_ENCAMINHAMENTO = [
-  "CANAL",
+  "CANAL | ENDODONTIA",
   "PERIODONTIA",
   "RECONSTRUÇÃO",
   "CIRURGIA",
@@ -36,7 +36,7 @@ export const REGRAS_PROCEDIMENTOS = {
     tipo: "whatsapp",
     dentistasPermitidos: [],
   },
-  CANAL: {
+  "CANAL | ENDODONTIA": {
     tipo: "encaminhamento",
     dentistasPermitidos: [],
   },
