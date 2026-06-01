@@ -65,12 +65,27 @@ function segundaDaProximaSemana(data: Date) {
   return novaData;
 }
 
-function obterDataLimiteAgenda() {
+function primeiroDiaDoProximoMes(data: Date) {
+  return new Date(data.getFullYear(), data.getMonth() + 1, 1);
+}
+
+function mesmaCompetencia(dataA: Date, dataB: Date) {
+  return (
+    dataA.getFullYear() === dataB.getFullYear() &&
+    dataA.getMonth() === dataB.getMonth()
+  );
+}
+
+function obterDataLimiteAgenda(tipo?: string | null) {
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
 
   const ano = hoje.getFullYear();
   const mes = hoje.getMonth();
+
+  if (tipo === "ortodontia") {
+    return new Date(ano, mes + 2, 0);
+  }
 
   if (hoje.getDate() >= 25) {
     return new Date(ano, mes + 2, 0);
@@ -79,7 +94,7 @@ function obterDataLimiteAgenda() {
   return new Date(ano, mes + 1, 0);
 }
 
-async function buscarUltimoAgendamentoClinico(
+async function buscarUltimoAgendamento(
   token: string,
   carteirinha: string
 ) {
@@ -141,17 +156,20 @@ export async function GET(request: Request) {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
 
-    const limite = obterDataLimiteAgenda();
+    const amanha = new Date(hoje);
+    amanha.setDate(amanha.getDate() + 1);
 
-    let dataMinimaPermitida = new Date(hoje);
+    const limite = obterDataLimiteAgenda(tipo);
 
-    if (tipo === "clinico" && carteirinha) {
-      const ultimoAgendamento = await buscarUltimoAgendamentoClinico(
+    let dataMinimaPermitida = new Date(amanha);
+
+    if (carteirinha) {
+      const ultimoAgendamento = await buscarUltimoAgendamento(
         token,
         carteirinha
       );
 
-      if (ultimoAgendamento?.dataAgenda) {
+      if (tipo === "clinico" && ultimoAgendamento?.dataAgenda) {
         const dataUltimoAgendamento = converterDataBR(
           ultimoAgendamento.dataAgenda
         );
@@ -160,6 +178,22 @@ export async function GET(request: Request) {
 
         if (proximaSemana > dataMinimaPermitida) {
           dataMinimaPermitida = proximaSemana;
+        }
+      }
+
+      if (tipo === "ortodontia" && ultimoAgendamento?.dataAgenda) {
+        const dataUltimoAgendamento = converterDataBR(
+          ultimoAgendamento.dataAgenda
+        );
+
+        dataUltimoAgendamento.setHours(0, 0, 0, 0);
+
+        if (mesmaCompetencia(dataUltimoAgendamento, hoje)) {
+          const proximoMes = primeiroDiaDoProximoMes(hoje);
+
+          if (proximoMes > dataMinimaPermitida) {
+            dataMinimaPermitida = proximoMes;
+          }
         }
       }
     }
@@ -223,6 +257,7 @@ export async function GET(request: Request) {
 
     return Response.json({
       success: true,
+      tipo,
       dataMinimaPermitida: formatarDataBR(dataMinimaPermitida),
       dataLimitePermitida: formatarDataBR(limite),
       datasDisponiveis,

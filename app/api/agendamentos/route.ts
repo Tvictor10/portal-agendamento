@@ -107,7 +107,7 @@ export async function GET(request: Request) {
 
       dataAgenda.setHours(0, 0, 0, 0);
 
-      return dataAgenda >= hojeSemHora;
+      return dataAgenda > hojeSemHora;
     });
 
     return Response.json({
