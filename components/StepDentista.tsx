@@ -44,7 +44,7 @@ export default function StepDentista({
           </p>
 
           <a
-            href="https://wa.me/5584999999999"
+            href="https://wa.me/5584988024098"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-4 block rounded-xl bg-green-600 px-4 py-3 text-center font-semibold text-white transition hover:bg-green-700"
