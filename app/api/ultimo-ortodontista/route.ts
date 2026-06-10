@@ -24,15 +24,13 @@ function normalizarTexto(texto: string) {
     .toUpperCase();
 }
 
+function converterDataBR(data: string) {
+  const [dia, mes, ano] = data.split("/");
+  return new Date(Number(ano), Number(mes) - 1, Number(dia));
+}
+
 function identificarClinicaPeloTexto(texto: string) {
   const textoNormalizado = normalizarTexto(texto);
-
-  if (textoNormalizado.includes("CENTRO")) {
-    return {
-      id: 16595,
-      nome: "DENTAL MED CENTER - CENTRO",
-    };
-  }
 
   if (textoNormalizado.includes("SANTA CRUZ")) {
     return {
@@ -52,6 +50,13 @@ function identificarClinicaPeloTexto(texto: string) {
     return {
       id: 16657,
       nome: "DENTAL MED CENTER PARNAMIRIM",
+    };
+  }
+
+  if (textoNormalizado.includes("CENTRO")) {
+    return {
+      id: 16595,
+      nome: "DENTAL MED CENTER - CENTRO",
     };
   }
 
@@ -118,58 +123,52 @@ export async function GET(request: Request) {
     const json = await response.json();
     const agendamentos = json.data || [];
 
-    const clinicasPossiveis = [
-      { id: 16595, nome: "DENTAL MED CENTER - CENTRO" },
-      { id: 16659, nome: "DENTAL MED CENTER - SANTA CRUZ" },
-      { id: 16656, nome: "DENTAL MED CENTER GOIANINHA" },
-      { id: 16657, nome: "DENTAL MED CENTER PARNAMIRIM" },
-    ];
+    const agendamentosOrdenados = agendamentos
+      .filter((item: any) => item.dataAgenda && item.prestador)
+      .sort((a: any, b: any) => {
+        return (
+          converterDataBR(b.dataAgenda).getTime() -
+          converterDataBR(a.dataAgenda).getTime()
+        );
+      });
 
-    for (const clinica of clinicasPossiveis) {
+    for (const agendamento of agendamentosOrdenados) {
+      const clinicaEncontrada = identificarClinicaPeloTexto(
+        agendamento.prestador
+      );
+
+      if (!clinicaEncontrada) {
+        continue;
+      }
+
       const ortodontistas = await buscarOrtodontistasDaClinica(
         token,
-        clinica.id
+        clinicaEncontrada.id
       );
 
-      const agendamentoComOrtodontista = agendamentos.find(
-        (agendamento: any) => {
-          const prestadorNormalizado = normalizarTexto(agendamento.prestador);
+      const prestadorNormalizado = normalizarTexto(agendamento.prestador);
 
-          return ortodontistas.some((ortodontista: any) =>
-            prestadorNormalizado.includes(ortodontista.nomeNormalizado)
-          );
-        }
+      const ortodontistaEncontrado = ortodontistas.find((ortodontista: any) =>
+        prestadorNormalizado.includes(ortodontista.nomeNormalizado)
       );
 
-      if (agendamentoComOrtodontista) {
-        const prestadorNormalizado = normalizarTexto(
-          agendamentoComOrtodontista.prestador
-        );
-
-        const ortodontistaEncontrado = ortodontistas.find((ortodontista: any) =>
-          prestadorNormalizado.includes(ortodontista.nomeNormalizado)
-        );
-
-        const clinicaEncontrada =
-          identificarClinicaPeloTexto(agendamentoComOrtodontista.prestador) ||
-          clinica;
-
-        return Response.json({
-          success: true,
-          possuiOrtodontistaAnterior: true,
-          clinica: clinicaEncontrada,
-          ortodontista: {
-            id: ortodontistaEncontrado?.id,
-            nome:
-              ortodontistaEncontrado?.nome ||
-              agendamentoComOrtodontista.prestador,
-            dataUltimoAgendamento: agendamentoComOrtodontista.dataAgenda,
-            horaUltimoAgendamento: agendamentoComOrtodontista.horaInicio,
-            idAtendimento: agendamentoComOrtodontista.idAtendimento,
-          },
-          raw: json,
-        });
+      if (!ortodontistaEncontrado) {
+        continue;
       }
+
+      return Response.json({
+        success: true,
+        possuiOrtodontistaAnterior: true,
+        clinica: clinicaEncontrada,
+        ortodontista: {
+          id: ortodontistaEncontrado.id,
+          nome: ortodontistaEncontrado.nome,
+          dataUltimoAgendamento: agendamento.dataAgenda,
+          horaUltimoAgendamento: agendamento.horaInicio,
+          idAtendimento: agendamento.idAtendimento,
+        },
+        raw: json,
+      });
     }
 
     return Response.json({
