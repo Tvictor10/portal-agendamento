@@ -427,6 +427,23 @@ if (exigeEncaminhamento && !arquivoEncaminhamento) {
         );
       }
 
+      await fetch("/api/salvar-agendamento-whatsapp", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    nome: beneficiario?.nome || "",
+    telefone: beneficiario?.celular || "",
+    carteirinha: carteirinhaSelecionada.numero,
+    idAtendimento: raw.idAtendimento || raw.data?.idAtendimento || null,
+    data: dataSelecionada,
+    horario: horarioSelecionado,
+    unidade: clinicaSelecionada.nome,
+    dentista: dentistaSelecionado.nome,
+  }),
+});
+
       const exigeEncaminhamento =
   procedimentoClinico &&
   PROCEDIMENTOS_COM_ENCAMINHAMENTO.includes(
