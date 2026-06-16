@@ -1,8 +1,8 @@
 {
   "crons": [
-    {
-      "path": "/api/processar-lembretes-whatsapp",
-      "schedule": "0 11 * * *"
-    }
+   {
+  "path": "/api/processar-lembretes-whatsapp",
+  "schedule": "0 12 * * *"
+}
   ]
 }
