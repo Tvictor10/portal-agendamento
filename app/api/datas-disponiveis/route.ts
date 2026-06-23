@@ -200,20 +200,19 @@ export async function GET(request: Request) {
       }
     }
 
-    const ehRobertaParnamirim =
-  tipo === "ortodontia" &&
-  Number(idClinica) === 16657 &&
-  Number(idCorpoClinico) === 14811;
+    const ehOrtodontiaParnamirim =
+      tipo === "ortodontia" &&
+      Number(idClinica) === 16657;
 
-if (ehRobertaParnamirim) {
-  const dataInicioRoberta = new Date(2026, 6, 20);
+    if (ehOrtodontiaParnamirim) {
+      const dataInicioParnamirim = new Date(2026, 6, 20);
 
-  if (dataInicioRoberta > dataMinimaPermitida) {
-    dataMinimaPermitida = dataInicioRoberta;
-  }
-}
+      if (dataInicioParnamirim > dataMinimaPermitida) {
+        dataMinimaPermitida = dataInicioParnamirim;
+      }
+    }
 
-const usarInicioDoDia = ehRobertaParnamirim;
+    const usarInicioDoDia = ehOrtodontiaParnamirim;
 
     const url =
       `${process.env.API_BASE_URL}/agenda-disponivel-corpo-clinico` +
