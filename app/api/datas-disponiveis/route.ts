@@ -23,12 +23,14 @@ function formatarDataBR(data: Date) {
   return `${dia}/${mes}/${ano}`;
 }
 
-function formatarDataHoraISO(data: Date) {
+function formatarDataHoraISO(data: Date, usarInicioDoDia = false) {
   const ano = data.getFullYear();
   const mes = String(data.getMonth() + 1).padStart(2, "0");
   const dia = String(data.getDate()).padStart(2, "0");
 
-  return `${ano}-${mes}-${dia}T08:00:00`;
+  const hora = usarInicioDoDia ? "00:00:00" : "08:00:00";
+
+  return `${ano}-${mes}-${dia}T${hora}`;
 }
 
 function obterDiaSemana(data: Date) {
@@ -198,11 +200,29 @@ export async function GET(request: Request) {
       }
     }
 
+    const ehRobertaParnamirim =
+  tipo === "ortodontia" &&
+  Number(idClinica) === 16657 &&
+  Number(idCorpoClinico) === 14811;
+
+if (ehRobertaParnamirim) {
+  const dataInicioRoberta = new Date(2026, 6, 20);
+
+  if (dataInicioRoberta > dataMinimaPermitida) {
+    dataMinimaPermitida = dataInicioRoberta;
+  }
+}
+
+const usarInicioDoDia = ehRobertaParnamirim;
+
     const url =
       `${process.env.API_BASE_URL}/agenda-disponivel-corpo-clinico` +
       `?idCooperativa=${idCooperativa}` +
       `&idClinica=${idClinica}` +
-      `&dataInicio=${formatarDataHoraISO(dataMinimaPermitida)}` +
+      `&dataInicio=${formatarDataHoraISO(
+        dataMinimaPermitida,
+        usarInicioDoDia
+      )}` +
       `&idCorpoClinico=${idCorpoClinico}`;
 
     const response = await fetch(url, {

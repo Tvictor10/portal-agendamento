@@ -114,6 +114,46 @@ export default function Home() {
     `AG-${Math.floor(Math.random() * 100000)}`
   );
 
+  const [cancelandoAgendamento, setCancelandoAgendamento] = useState(false);
+
+  async function cancelarAgendamentoExistente() {
+  if (!agendamentoExistente) return;
+
+  const confirmar = window.confirm(
+    "Tem certeza que deseja cancelar este agendamento?"
+  );
+
+  if (!confirmar) return;
+
+  try {
+    setCancelandoAgendamento(true);
+
+    const response = await fetch("/api/cancelar-agendamento", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        idAgendamento: agendamentoExistente.idAtendimento,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.message || "Erro ao cancelar agendamento.");
+    }
+
+    alert("Agendamento cancelado com sucesso.");
+    setAgendamentoExistente(null);
+    setEtapa("carteirinha");
+  } catch (error: any) {
+    setErro(error.message || "Erro ao cancelar agendamento.");
+  } finally {
+    setCancelandoAgendamento(false);
+  }
+}
+
   function formatCPF(value: string) {
     value = value.replace(/\D/g, "");
     value = value.replace(/(\d{3})(\d)/, "$1.$2");
@@ -602,13 +642,11 @@ if (exigeEncaminhamento && arquivoEncaminhamento) {
         {etapa === "agendamento-existente" &&
           agendamentoExistente && (
             <StepAgendamentoExistente
-              agendamento={
-                agendamentoExistente
-              }
-              onVoltar={() =>
-                setEtapa("carteirinha")
-              }
-            />
+  agendamento={agendamentoExistente}
+  onVoltar={() => setEtapa("carteirinha")}
+  onCancelar={cancelarAgendamentoExistente}
+  cancelando={cancelandoAgendamento}
+/>
           )}
 
         {etapa === "inicio-ortodontico" && (

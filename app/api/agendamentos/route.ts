@@ -21,6 +21,10 @@ function converterDataBR(data: string) {
   return new Date(Number(ano), Number(mes) - 1, Number(dia));
 }
 
+function statusEhCancelado(status: string) {
+  return String(status || "").trim().toUpperCase() === "CANCELADO";
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
 
@@ -102,6 +106,10 @@ export async function GET(request: Request) {
 
     const agendamentosFuturos = agendamentos.filter((item: any) => {
       if (!item.dataAgenda) return false;
+
+      if (statusEhCancelado(item.statusAgenda)) {
+        return false;
+      }
 
       const dataAgenda = converterDataBR(item.dataAgenda);
 

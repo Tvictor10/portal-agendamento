@@ -10,11 +10,15 @@ type Agendamento = {
 type Props = {
   agendamento: Agendamento;
   onVoltar: () => void;
+  onCancelar: () => void;
+  cancelando?: boolean;
 };
 
 export default function StepAgendamentoExistente({
   agendamento,
   onVoltar,
+  onCancelar,
+  cancelando = false,
 }: Props) {
   return (
     <>
@@ -47,9 +51,18 @@ export default function StepAgendamentoExistente({
 
       <button
         onClick={onVoltar}
-        className="w-full mt-6 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 transition text-white font-semibold py-3 rounded-xl shadow-lg"
+        disabled={cancelando}
+        className="w-full mt-6 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 transition text-white font-semibold py-3 rounded-xl shadow-lg disabled:opacity-60"
       >
         Voltar
+      </button>
+
+      <button
+        onClick={onCancelar}
+        disabled={cancelando}
+        className="w-full mt-3 bg-red-600 hover:bg-red-700 transition text-white font-semibold py-3 rounded-xl shadow-lg disabled:opacity-60"
+      >
+        {cancelando ? "Cancelando..." : "Cancelar Agendamento"}
       </button>
     </>
   );
