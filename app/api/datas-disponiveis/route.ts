@@ -294,3 +294,10 @@ export async function GET(request: Request) {
     );
   }
 }
+
+// Ajuste específico para ortodontia de Parnamirim.
+// A API agenda-disponivel-corpo-clinico não retorna corretamente
+// as datas futuras quando consultada com o comportamento padrão.
+// Ajuste temporário para ortodontia de Parnamirim.
+// Alguns prestadores retornam agenda incompleta pela API.
+// Monitorar comportamento quando abrir agenda de agosto/2026.
