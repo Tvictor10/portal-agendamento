@@ -459,7 +459,7 @@ if (exigeEncaminhamento && !arquivoEncaminhamento) {
       const data = await response.json();
 
       const raw = JSON.parse(data.raw || "{}");
-
+      
       if (!raw.success) {
         throw new Error(
           raw.message ||
@@ -476,7 +476,7 @@ if (exigeEncaminhamento && !arquivoEncaminhamento) {
     nome: beneficiario?.nome || "",
     telefone: beneficiario?.celular || "",
     carteirinha: carteirinhaSelecionada.numero,
-    idAtendimento: raw.idAtendimento || raw.data?.idAtendimento || null,
+    idAtendimento: raw.data || null,
     data: dataSelecionada,
     horario: horarioSelecionado,
     unidade: clinicaSelecionada.nome,
