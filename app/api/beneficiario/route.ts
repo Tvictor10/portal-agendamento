@@ -38,6 +38,7 @@ const planosClinicos = [
   "MODELAR EXCLUSIVO",
   "MODELAR FLEX 02",
   "VIP (2010)",
+  "VIP (2011)",
   "VIP",
 ];
 
