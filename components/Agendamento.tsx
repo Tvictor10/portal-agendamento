@@ -487,6 +487,10 @@ if (exigeEncaminhamento && !arquivoEncaminhamento) {
     horario: horarioSelecionado,
     unidade: clinicaSelecionada.nome,
     dentista: dentistaSelecionado.nome,
+    especialidade:
+  dentistaSelecionado.especialidade === "Ortodontia"
+    ? "Ortodontia"
+    : procedimentoClinico || "",
   }),
 });
 

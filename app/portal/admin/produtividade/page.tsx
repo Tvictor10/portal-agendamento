@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { consultarProdutividade } from "../../../../services/portalProdutividade";
+import TabelaProdutividadeInterativa from "../../../../components/portal/TabelaProdutividadeInterativa";
 
 export const dynamic = "force-dynamic";
 
@@ -385,66 +386,12 @@ export default async function DashboardProdutividadePage({
             Agendamentos realizados por agentes e administradores.
           </p>
 
-          <div className="mt-5 overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-200 text-slate-600">
-                <tr>
-                  <th className="px-3 py-3 font-semibold">
-                    Funcionário
-                  </th>
-                  <th className="px-3 py-3 font-semibold">
-                    Perfil
-                  </th>
-                  <th className="px-3 py-3 text-center font-semibold">
-                    Realizados
-                  </th>
-                  <th className="px-3 py-3 text-center font-semibold">
-                    Cancelados
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {produtividadeFuncionarios.map((funcionario) => (
-                  <tr
-                    key={funcionario.id}
-                    className="border-b border-slate-100"
-                  >
-                    <td className="px-3 py-4 font-medium text-slate-800">
-                      {funcionario.nome}
-
-                      {!funcionario.ativo && (
-                        <span className="ml-2 text-xs text-slate-500">
-                          (Inativo)
-                        </span>
-                      )}
-                    </td>
-
-                    <td className="px-3 py-4 text-slate-600">
-                      {funcionario.perfil === "admin"
-                        ? "Administrador"
-                        : "Agente"}
-                    </td>
-
-                    <td className="px-3 py-4 text-center font-semibold text-blue-700">
-                      {funcionario.realizados}
-                    </td>
-
-                    <td className="px-3 py-4 text-center text-slate-700">
-                      {funcionario.cancelados}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {produtividadeFuncionarios.length === 0 && (
-              <p className="py-6 text-center text-sm text-slate-500">
-                Nenhum funcionário encontrado.
-              </p>
-            )}
-          </div>
-        </section>
+          <TabelaProdutividadeInterativa
+  funcionarios={produtividadeFuncionarios}
+  inicio={datas.inicio}
+  fim={datas.fim}
+/>
+                  </section>
 
         <p className="mt-4 text-xs text-slate-500">
           Agendamentos contados pela data de confirmação, inclusive os

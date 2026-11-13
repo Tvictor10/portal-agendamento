@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
       horario,
       unidade,
       dentista,
+      especialidade,
     } = body;
 
     const [dia, mes, ano] = String(data).split("/");
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest) {
         horario,
         unidade,
         dentista,
+        especialidade: especialidade || null,
         status_envio: "pendente",
       });
 
